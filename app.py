@@ -4,9 +4,13 @@ from flask import Flask, request, jsonify
 from flaskext.mysql import MySQL
 from flask_influxdb import InfluxDB
 
+from controllers.exampleController import simple_page
+
 # -- INIT OBJECTS --
 
 app = Flask(__name__)
+app.register_blueprint(simple_page)
+
 mysql = MySQL()
 influx_db = InfluxDB(app=app)
 
@@ -66,6 +70,26 @@ def getEvents():
     for cpu_point in cpu_points:
         result.append("Host: %s, Value: %s, Time: %s" % (cpu_point['host'], cpu_point['value'], cpu_point['time']))
     return jsonify({'data': result})
+
+#Post one event
+@app.route('/postEvent', methods=['POST'])
+
+def postEvent():
+    dbcon = influx_db.connection
+    dbcon.switch_database(database='statsdemo')
+    json_body = [
+        {
+            "measurement": "cpu",
+            "tags": {
+                "host": "serverBB"
+            },
+            "fields": {
+                "value": 0.44
+            }
+        }
+    ]
+    dbcon.write_points(json_body)
+    return jsonify({'code':201,'message': 'Created'}),201
 
 #ERROR ROUTE
 @app.errorhandler(404)
