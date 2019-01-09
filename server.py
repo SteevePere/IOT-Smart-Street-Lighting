@@ -1,11 +1,14 @@
 # -- IMPORTS --
+import hashlib
 from flask import Flask, request, jsonify
 from flaskext.mysql import MySQL
+from flask_influxdb import InfluxDB
 
 # -- INIT OBJECTS --
 
-mysql = MySQL()
 app = Flask(__name__)
+mysql = MySQL()
+influx_db = InfluxDB(app=app)
 
 # -- APP CONFIG --
 
@@ -41,7 +44,8 @@ def home():
 def signIn():
     user = []
     login = request.headers.get('login')
-    password = request.headers.get('password')
+    sha_1 = hashlib.sha1(request.headers.get('password'))
+    password = sha_1.hexdigest()
     cursor.execute("SELECT * FROM users WHERE login = (%s) AND password = (%s)", (login, password))
     rows = cursor.fetchall()
     columns = [desc[0] for desc in cursor.description]
@@ -49,6 +53,19 @@ def signIn():
     	row = dict(zip(columns,row))
     	user.append(row)
     return jsonify({'users': user}),200
+
+#Get all events
+@app.route('/getEvents', methods=['GET'])
+
+def getEvents():
+    dbcon = influx_db.connection
+    dbcon.switch_database(database='statsdemo')
+    tabledata = dbcon.query('SELECT * FROM cpu')
+    cpu_points = list(tabledata.get_points(measurement='cpu'))
+    result = []
+    for cpu_point in cpu_points:
+        result.append("Host: %s, Value: %s, Time: %s" % (cpu_point['host'], cpu_point['value'], cpu_point['time']))
+    return jsonify({'data': result})
 
 #ERROR ROUTE
 @app.errorhandler(404)
