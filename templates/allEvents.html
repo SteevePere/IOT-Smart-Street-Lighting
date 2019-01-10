@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang = "en-US">
+
+<head>
+
+  	<meta charset = "UTF-8">
+  	<link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+  	<!-- Bootstrap -->
+  	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  	<!-- Datatables -->
+  	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+  	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+  	<!-- Title -->
+  	<title>Gérér ma Conso</title>
+  	<!-- Custom styles -->
+  	<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style/style.css') }}">
+
+</head>
+
+<body>
+
+		<nav class="navbar navbar-inverse navbar-fixed-top navbar-light bg-light" role="navigation">
+			<a class="navbar-brand" href="/">Gérer ma Conso</a>
+			<div class="collapse navbar-collapse" id="navbarSupportedContent"></div>
+		</nav>
+
+		<br>
+		<br>
+		<br>
+		<br>
+
+		<div>
+			<h1>Ma conso</h1>
+		</div>
+
+		<br>
+		<br>
+		<br>
+		<br>
+
+		<div style= "background-color: rgb(227, 240, 247, .25); padding: 15px; border-radius: 10px; margin-top: 0px;">
+			<table class="table" id="list" cellspacing="0" cellpadding="0">
+			<thead>
+				<tr>
+					<th>ID de L'équipement</th>
+					<th>Valeur (En lumens)</th>
+					<th>Date et Heure</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for event in events %}
+				<tr>
+					<td>{{event.device}}</td>
+					<td>{{event.lumens}}</td>
+					<td>{{event.time}}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+			</table>
+		</div>
+
+</body>
+
+<script>
+
+    $.fn.dataTable.ext.classes.sLengthSelect = 'btn-sm btn-secondary dropdown-toggle';
+    $.fn.dataTable.ext.classes.sFilterInput = 'form-control input-sm';
+    $('#tablebalanceBTC_filter input[type="search"]').attr('placeholder', 'Table search');
+    $(document).ready(function() {
+        $('#list').DataTable( {
+            "dom": '<"top"fl>rt<"bottom"ip><"clear">',
+    				language: {
+    					search: "",
+    					searchPlaceholder: "Rechercher..."
+    				},
+    		} );
+    } );
+
+</script>

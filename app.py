@@ -1,16 +1,12 @@
 # -- IMPORTS --
 import hashlib
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect, url_for, render_template
 from flaskext.mysql import MySQL
 from flask_influxdb import InfluxDB
-
-from controllers.exampleController import simple_page
 
 # -- INIT OBJECTS --
 
 app = Flask(__name__)
-app.register_blueprint(simple_page)
-
 mysql = MySQL()
 influx_db = InfluxDB(app=app)
 
@@ -30,7 +26,7 @@ cursor = conn.cursor()
 # -- ROUTES --
 
 #INDEX
-@app.route('/', methods=['GET'])
+@app.route('/getUsers', methods=['GET'])
 
 def home():
     all_users = []
@@ -63,13 +59,11 @@ def signIn():
 
 def getEvents():
     dbcon = influx_db.connection
-    dbcon.switch_database(database='statsdemo')
-    tabledata = dbcon.query('SELECT * FROM cpu')
-    cpu_points = list(tabledata.get_points(measurement='cpu'))
-    result = []
-    for cpu_point in cpu_points:
-        result.append("Host: %s, Value: %s, Time: %s" % (cpu_point['host'], cpu_point['value'], cpu_point['time']))
-    return jsonify({'data': result})
+    dbcon.switch_database(database='pli')
+    tabledata = dbcon.query('SELECT * FROM events')
+    events = list(tabledata.get_points(measurement='events'))
+    # return jsonify({'data': events})
+    return render_template('allEvents.html', events=events),200
 
 #Post one event
 @app.route('/postEvent', methods=['POST'])
