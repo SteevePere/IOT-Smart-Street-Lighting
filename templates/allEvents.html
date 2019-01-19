@@ -16,13 +16,17 @@
   	<title>Gérér ma Conso</title>
   	<!-- Custom styles -->
   	<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style/style.css') }}">
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
 
 </head>
 
 <body>
 
 		<nav class="navbar navbar-inverse navbar-fixed-top navbar-light bg-light" role="navigation">
-			<a class="navbar-brand" href="/">Gérer ma Conso</a>
+			<a class="navbar-brand" href="/getEvents">Gérer ma Conso</a>
+      <a href="/signIn"><img src="/static/images/logout.png" title="Déconnexion" style="margin-left: 87%; margin-top: 5px; height: 40px; width: 40px;"></img></a>
 			<div class="collapse navbar-collapse" id="navbarSupportedContent"></div>
 		</nav>
 
@@ -41,6 +45,29 @@
 		<br>
 
 		<div style= "background-color: rgb(227, 240, 247, .25); padding: 15px; border-radius: 10px; margin-top: 0px;">
+
+      <form action="{{ url_for('getEvents') }}" method="post" class="form" role="form">
+				<div class="form-group">
+					<d1>
+            <select class="form-control" id="street" name="street" style="width: 300px;">
+              <option value="Maurice_Grandcoing">Maurice Grandcoing</option>
+              <option value="Lenine">Lénine</option>
+            </select>
+					</d1>
+				</div>
+        <div class="form-group">
+					<d1>
+            <select class="form-control" id="period" name="period" style="width: 300px;">
+              <option value="night">Night</option>
+              <option value="week">Week</option>
+              <option value="month">Month</option>
+              <option value="year">Year</option>
+            </select>
+					</d1>
+				</div>
+        <p><input id="filter" type=submit value="Filtrer" class="btn btn-info" style="margin-bottom: 10px; margin-top: 20px;"></p>
+			</form>
+
 			<table class="table" id="list" cellspacing="0" cellpadding="0">
 			<thead>
 				<tr>
@@ -59,23 +86,61 @@
 				{% endfor %}
 			</tbody>
 			</table>
+
 		</div>
+
+    <div id="map" style="height: 350px;"></div>
+
+    {{event_count}}
 
 </body>
 
-<script>
+<script type="text/javascript">
 
-    $.fn.dataTable.ext.classes.sLengthSelect = 'btn-sm btn-secondary dropdown-toggle';
-    $.fn.dataTable.ext.classes.sFilterInput = 'form-control input-sm';
-    $('#tablebalanceBTC_filter input[type="search"]').attr('placeholder', 'Table search');
-    $(document).ready(function() {
-        $('#list').DataTable( {
-            "dom": '<"top"fl>rt<"bottom"ip><"clear">',
-    				language: {
-    					search: "",
-    					searchPlaceholder: "Rechercher..."
-    				},
-    		} );
-    } );
+  $.fn.dataTable.ext.classes.sLengthSelect = 'btn-sm btn-secondary dropdown-toggle';
+  $.fn.dataTable.ext.classes.sFilterInput = 'form-control input-sm';
+  $('#tablebalanceBTC_filter input[type="search"]').attr('placeholder', 'Table search');
+  $(document).ready(function() {
+      $('#list').DataTable( {
+          "dom": '<"top"fl>rt<"bottom"ip><"clear">',
+  				language: {
+  					search: "",
+  					searchPlaceholder: "Rechercher..."
+  				},
+  		} );
+  } );
+
+  //LEAFLET
+
+  var map = L.map('map').setView([48.8145722,2.3904915], 13);
+  var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+  });
+
+  var redIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+
+      iconSize:     [25, 41],
+      shadowSize:   [41, 41],
+      iconAnchor:   [12, 41],
+      shadowAnchor: [4, 62],
+      popupAnchor:  [0, -50]
+  });
+
+  {% for device in devices %}
+
+    {% if device.status == 0 %}
+      L.marker([{{device.latitude}},{{device.longitude}}], {icon: redIcon}).addTo(map)
+      .bindPopup("Device {{device.device}} </br> Status: OFF").openPopup();
+
+    {% else %}
+      L.marker([{{device.latitude}},{{device.longitude}}]).addTo(map)
+      .bindPopup("Device {{device.device}} </br> Status: ON").openPopup();
+
+    {% endif %}
+
+  {% endfor %}
+
+  map.addLayer(layer);
 
 </script>
