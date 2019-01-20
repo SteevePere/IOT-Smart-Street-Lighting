@@ -37,12 +37,11 @@ h2 {
 .pop_image_small:hover {
 	transform: scale(1.3, 1.3);
 }
-/*
+
 .navbar-inverse {
-	background: linear-gradient(45deg, #5FB9EE 0%, rgba(255,255,255,1) 27%);
+	background: rgb(42, 63, 84);
 	border-width: 0px;
-	height:50px;"
-} */
+}
 
 .navbar-brand {
 	color: #fff!important;

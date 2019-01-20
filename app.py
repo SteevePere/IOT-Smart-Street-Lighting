@@ -63,61 +63,84 @@ def getEvents():
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
 
-    period = 48
-    unit = "h"
-
-    event_count = 0
+    streets = ['Lenine', 'Toto', 'Maurice_Grandcoing']
+    date = "2019-01-19"
+    interval = '30m'
 
     if (request.method == 'POST'):
 
-        street = request.form['street']
+        date = request.form['period']
+        interval = request.form['interval']
 
-        filtered_device_ids = []
-        filtered_events = []
+    Lenine_times = []
+    Lenine_counts = []
+    Toto_times = []
+    Toto_counts = []
+    Maurice_Grandcoing_times = []
+    Maurice_Grandcoing_counts = []
 
-        all_devices = dbcon.query("SELECT * FROM devices")
-        devices = list(all_devices.get_points(tags={'street':street}))
+    import time
+    import datetime
+    timestamp = int(time.mktime(datetime.datetime.strptime(date, "%Y-%m-%d").timetuple()))
+    time_from = (timestamp + 68400) * 1000000000 #from 6
+    time_to = time_from + 43200000000000 #to 6
 
-        for device in devices:
-            filtered_device_ids.append(device["device"])
+    for street in streets:
 
-        for device in filtered_device_ids:
-            events = dbcon.query("SELECT * FROM events WHERE time < now() AND time >= now() - {0}{1}".format(period, unit))
-            event_points = list(events.get_points(tags={'device':device}))
-            filtered_events.append(event_points)
+        events = dbcon.query("select count(lumens) from events where street = '{0}' and time <= {1} AND time >= {2} group by time({3})".format(street, time_to, time_from, interval))
+        event_points = list(events.get_points())
 
-        for event in filtered_events:
-            event_count +=1
+        for event in event_points:
+            event_time = "Z".join(event["time"].split('Z')[0:1])
+            event_time = "T".join(event_time.split('T')[1:])
+            event_time = ":".join(event_time.split(':')[:2])
+            if (street == 'Lenine'):
+                Lenine_times.append(event_time)
+                Lenine_counts.append(event["count"])
+            if (street == 'Toto'):
+                Toto_times.append(event_time)
+                Toto_counts.append(event["count"])
+            if (street == 'Maurice_Grandcoing'):
+                Maurice_Grandcoing_times.append(event_time)
+                Maurice_Grandcoing_counts.append(event["count"])
 
+        MG_legend = 'Rue Maurice Grandcoing, la nuit du ' + date
+        Toto_legend = 'Rue Toto, la nuit du ' + date
+        Lenine_legend = 'Rue Lenine, la nuit du ' + date
 
     tabledata = dbcon.query('SELECT * FROM events')
     all_events = list(tabledata.get_points(measurement='events'))
     tabledata2 = dbcon.query('SELECT * FROM devices')
     all_devices = list(tabledata2.get_points(measurement='devices'))
 
-    return render_template('allEvents.html', events=all_events, devices=all_devices, event_count=event_count),200
+    return render_template('allEvents.html', events=all_events, devices=all_devices, Lenine_values=Lenine_counts, MG_values=Maurice_Grandcoing_counts, Toto_values=Toto_counts, labels=Lenine_times, Lenine_legend=Lenine_legend, MG_legend=MG_legend, Toto_legend=Toto_legend),200
 
 #Post one event
 @app.route('/postEvent', methods=['POST'])
 
 def postEvent():
-    import time;
-    time = int(time.time())
+    # import time;
+    # time = int(time.time())
+    time = 1547917200
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
-    json_body = [
-        {
-            "measurement": "events",
-            "tags": {
-                "device": "006"
-            },
-            "fields": {
-                "lumens": 0.45
-            },
-            "time": time
-        }
-    ]
-    dbcon.write_points(json_body, time_precision='s')
+
+    for i in range(24):
+        json_body = [
+            {
+                "measurement": "events",
+                "tags": {
+                    "device": "001",
+                    "street": "Maurice_Grandcoing"
+                },
+                "fields": {
+                    "lumens": 0.45
+                },
+                "time": time
+            }
+        ]
+        dbcon.write_points(json_body, time_precision='s')
+        time += 4325
     return jsonify({'code':201,'message': 'Created'}),201
 
 

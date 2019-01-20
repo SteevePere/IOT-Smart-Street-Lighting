@@ -19,6 +19,7 @@
     <!-- Leaflet -->
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
     <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+    <script src='static/Chart.min.js'></script>
 
 </head>
 
@@ -44,54 +45,50 @@
 		<br>
 		<br>
 
-		<div style= "background-color: rgb(227, 240, 247, .25); padding: 15px; border-radius: 10px; margin-top: 0px;">
+    <div id="map" style="height: 350px; margin-bottom: 30px;"></div>
 
-      <form action="{{ url_for('getEvents') }}" method="post" class="form" role="form">
-				<div class="form-group">
-					<d1>
-            <select class="form-control" id="street" name="street" style="width: 300px;">
-              <option value="Maurice_Grandcoing">Maurice Grandcoing</option>
-              <option value="Lenine">Lénine</option>
-            </select>
-					</d1>
-				</div>
+		<div style= "background-color: rgb(42, 63, 84); padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px;">
+
+      <form action="{{ url_for('getEvents') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
         <div class="form-group">
-					<d1>
-            <select class="form-control" id="period" name="period" style="width: 300px;">
-              <option value="night">Night</option>
-              <option value="week">Week</option>
-              <option value="month">Month</option>
-              <option value="year">Year</option>
+  				<d1>
+            <select class="form-control" id="unit" name="unit" style="width: 300px;">
+              <option value="" disabled selected>Période...</option>
+              <option value="night">Nuit</option>
+              <option value="week">Semaine</option>
+              <option value="month">Mois</option>
+              <option value="year">Année</option>
             </select>
-					</d1>
-				</div>
-        <p><input id="filter" type=submit value="Filtrer" class="btn btn-info" style="margin-bottom: 10px; margin-top: 20px;"></p>
-			</form>
+  				</d1>
+  			</div>
+        <div class="form-group">
+  				<d1>
+            <input type="date" required class="form-control" id="period" name="period" style="width: 300px;">
+  				</d1>
+  			</div>
+        <div class="form-group">
+  				<d1>
+            <select class="form-control" id="interval" name="interval" style="width: 300px;">
+              <option value="" disabled selected>Echelle...</option>
+              <option value="5m">5 Minutes</option>
+              <option value="15m">15 Minutes</option>
+              <option value="30m">30 Minutes</option>
+              <option value="1h">1 Heure</option>
+            </select>
+  				</d1>
+  			</div>
+        <div class="form-group">
+  				<d1>
+            <input id="filter" type=submit value="Filtrer" class="btn btn-success">
+  				</d1>
+  			</div>
+  		</form>
 
-			<table class="table" id="list" cellspacing="0" cellpadding="0">
-			<thead>
-				<tr>
-					<th>ID de L'équipement</th>
-					<th>Valeur (En lumens)</th>
-					<th>Date et Heure</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for event in events %}
-				<tr>
-					<td>{{event.device}}</td>
-					<td>{{event.lumens}}</td>
-					<td>{{event.time}}</td>
-				</tr>
-				{% endfor %}
-			</tbody>
-			</table>
+      <canvas id="myChart" width="1150" height="600" style="padding: 10px;"></canvas>
 
-		</div>
+    </div>
 
-    <div id="map" style="height: 350px;"></div>
 
-    {{event_count}}
 
 </body>
 
@@ -142,5 +139,124 @@
   {% endfor %}
 
   map.addLayer(layer);
+
+  //ChartJS
+
+  // Global parameters:
+  // do not resize the chart canvas when its container does (keep at 600x400px)
+  Chart.defaults.global.responsive = false;
+
+  // define the chart data
+  var chartData = {
+    labels : [{% for item in labels %}
+               "{{item}}",
+              {% endfor %}],
+    datasets : [{
+        label: '{{ Lenine_legend }}',
+        fill: false,
+        lineTension: .3,
+        backgroundColor: "rgba(75,192,192,1)",
+        borderColor: "rgba(75,192,192,0.4)",
+        borderWidth: 1,
+        borderCapStyle: 'butt',
+        borderDash: [],
+        borderDashOffset: 0.0,
+        borderJoinStyle: 'miter',
+        pointBorderColor: "rgba(75,192,192,1)",
+        pointBackgroundColor: "#fff",
+        pointBorderWidth: 1,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: "rgba(75,192,192,1)",
+        pointHoverBorderColor: "rgba(220,220,220,1)",
+        pointHoverBorderWidth: 2,
+        pointRadius: 1,
+        pointHitRadius: 10,
+        data : [{% for item in Lenine_values %}
+                  {{item}},
+                {% endfor %}],
+        spanGaps: false
+    },
+    {
+        label: '{{ MG_legend }}',
+        fill: false,
+        lineTension: .3,
+        backgroundColor: "#ff3333",
+        borderColor: "#ff3333",
+        borderWidth: 1,
+        borderCapStyle: 'butt',
+        borderDash: [],
+        borderDashOffset: 0.0,
+        borderJoinStyle: 'miter',
+        pointBorderColor: "rgba(75,192,192,1)",
+        pointBackgroundColor: "#fff",
+        pointBorderWidth: 1,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: "rgba(75,192,192,1)",
+        pointHoverBorderColor: "rgba(220,220,220,1)",
+        pointHoverBorderWidth: 2,
+        pointRadius: 1,
+        pointHitRadius: 10,
+        data : [{% for item in MG_values %}
+                  {{item}},
+                {% endfor %}],
+        spanGaps: false
+    },
+    {
+        label: '{{ Toto_legend }}',
+        fill: false,
+        lineTension: .3,
+        backgroundColor: "rgba(175,192,192,1)",
+        borderColor: "rgba(175,192,192,0.7)",
+        borderWidth: 1,
+        borderCapStyle: 'butt',
+        borderDash: [],
+        borderDashOffset: 0.0,
+        borderJoinStyle: 'miter',
+        pointBorderColor: "rgba(75,192,192,1)",
+        pointBackgroundColor: "#fff",
+        pointBorderWidth: 1,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: "rgba(75,192,192,1)",
+        pointHoverBorderColor: "rgba(220,220,220,1)",
+        pointHoverBorderWidth: 2,
+        pointRadius: 1,
+        pointHitRadius: 10,
+        data : [{% for item in Toto_values %}
+                  {{item}},
+                {% endfor %}],
+        spanGaps: false
+    }]
+  }
+
+  // get chart canvas
+  var ctx = document.getElementById("myChart").getContext("2d");
+
+  // create the chart using the chart canvas
+  var myChart = new Chart(ctx, {
+    type: 'line',
+    data: chartData,
+    options: {
+        legend: {
+            labels: {
+                fontColor: "white",
+                padding: 20
+            }
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    fontColor: "white",
+                    beginAtZero: true
+                }
+            }],
+            xAxes: [{
+                ticks: {
+                    fontColor: "white",
+                    beginAtZero: true
+                }
+            }]
+        }
+      },
+  });
 
 </script>
