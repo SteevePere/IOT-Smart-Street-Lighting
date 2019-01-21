@@ -27,7 +27,7 @@
 
 		<nav class="navbar navbar-inverse navbar-fixed-top navbar-light bg-light" role="navigation">
 			<a class="navbar-brand" href="/getEvents">Gérer ma Conso</a>
-      <a href="/signIn"><img src="/static/images/logout.png" title="Déconnexion" style="margin-left: 87%; margin-top: 5px; height: 40px; width: 40px;"></img></a>
+      <a href="/signIn"><img src="/static/images/logout.png" title="Déconnexion" style="margin-left: 77%; margin-top: 5px; height: 40px; width: 40px;"></img></a>
 			<div class="collapse navbar-collapse" id="navbarSupportedContent"></div>
 		</nav>
 
@@ -40,35 +40,19 @@
 			<h1>Ma conso</h1>
 		</div>
 
-		<br>
-		<br>
-		<br>
-		<br>
-
-    <div id="map" style="height: 350px; margin-bottom: 30px;"></div>
+    <div id="map" style="height: 550px; margin-bottom: 30px;"></div>
 
 		<div style= "background-color: rgb(42, 63, 84); padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px;">
-
+      <h1 style="color: white; text-align: center;">Evènements la nuit du {{ date }}</h1>
       <form action="{{ url_for('getEvents') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
         <div class="form-group">
   				<d1>
-            <select class="form-control" id="unit" name="unit" style="width: 300px;">
-              <option value="" disabled selected>Période...</option>
-              <option value="night">Nuit</option>
-              <option value="week">Semaine</option>
-              <option value="month">Mois</option>
-              <option value="year">Année</option>
-            </select>
+            <input type="date" required class="form-control" value="{{ date }}" id="period" name="period" style="width: 200px;">
   				</d1>
   			</div>
         <div class="form-group">
   				<d1>
-            <input type="date" required class="form-control" id="period" name="period" style="width: 300px;">
-  				</d1>
-  			</div>
-        <div class="form-group">
-  				<d1>
-            <select class="form-control" id="interval" name="interval" style="width: 300px;">
+            <select class="form-control" id="interval" required name="interval" style="width: 200px;">
               <option value="" disabled selected>Echelle...</option>
               <option value="5m">5 Minutes</option>
               <option value="15m">15 Minutes</option>
@@ -84,7 +68,7 @@
   			</div>
   		</form>
 
-      <canvas id="myChart" width="1150" height="600" style="padding: 10px;"></canvas>
+      <canvas id="myChart" style="padding: 10px;"></canvas>
 
     </div>
 
@@ -157,7 +141,7 @@
         lineTension: .3,
         backgroundColor: "rgba(75,192,192,1)",
         borderColor: "rgba(75,192,192,0.4)",
-        borderWidth: 1,
+        borderWidth: 1.5,
         borderCapStyle: 'butt',
         borderDash: [],
         borderDashOffset: 0.0,
@@ -182,7 +166,7 @@
         lineTension: .3,
         backgroundColor: "#ff3333",
         borderColor: "#ff3333",
-        borderWidth: 1,
+        borderWidth: 1.5,
         borderCapStyle: 'butt',
         borderDash: [],
         borderDashOffset: 0.0,
@@ -205,9 +189,9 @@
         label: '{{ Toto_legend }}',
         fill: false,
         lineTension: .3,
-        backgroundColor: "rgba(175,192,192,1)",
-        borderColor: "rgba(175,192,192,0.7)",
-        borderWidth: 1,
+        backgroundColor: "#5cb85c",
+        borderColor: "#5cb85c",
+        borderWidth: 1.5,
         borderCapStyle: 'butt',
         borderDash: [],
         borderDashOffset: 0.0,
@@ -255,7 +239,8 @@
                     beginAtZero: true
                 }
             }]
-        }
+        },
+        responsive: true
       },
   });
 

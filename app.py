@@ -65,7 +65,7 @@ def getEvents():
 
     streets = ['Lenine', 'Toto', 'Maurice_Grandcoing']
     date = "2019-01-19"
-    interval = '30m'
+    interval = '1h'
 
     if (request.method == 'POST'):
 
@@ -104,16 +104,16 @@ def getEvents():
                 Maurice_Grandcoing_times.append(event_time)
                 Maurice_Grandcoing_counts.append(event["count"])
 
-        MG_legend = 'Rue Maurice Grandcoing, la nuit du ' + date
-        Toto_legend = 'Rue Toto, la nuit du ' + date
-        Lenine_legend = 'Rue Lenine, la nuit du ' + date
+        MG_legend = 'Rue Maurice Grandcoing'
+        Toto_legend = 'Rue Toto'
+        Lenine_legend = 'Rue Lenine'
 
     tabledata = dbcon.query('SELECT * FROM events')
     all_events = list(tabledata.get_points(measurement='events'))
     tabledata2 = dbcon.query('SELECT * FROM devices')
     all_devices = list(tabledata2.get_points(measurement='devices'))
 
-    return render_template('allEvents.html', events=all_events, devices=all_devices, Lenine_values=Lenine_counts, MG_values=Maurice_Grandcoing_counts, Toto_values=Toto_counts, labels=Lenine_times, Lenine_legend=Lenine_legend, MG_legend=MG_legend, Toto_legend=Toto_legend),200
+    return render_template('allEvents.html', date=date, events=all_events, devices=all_devices, Lenine_values=Lenine_counts, MG_values=Maurice_Grandcoing_counts, Toto_values=Toto_counts, labels=Lenine_times, Lenine_legend=Lenine_legend, MG_legend=MG_legend, Toto_legend=Toto_legend),200
 
 #Post one event
 @app.route('/postEvent', methods=['POST'])
@@ -125,7 +125,7 @@ def postEvent():
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
 
-    for i in range(24):
+    for i in range(154):
         json_body = [
             {
                 "measurement": "events",
@@ -140,7 +140,7 @@ def postEvent():
             }
         ]
         dbcon.write_points(json_body, time_precision='s')
-        time += 4325
+        time += 4351
     return jsonify({'code':201,'message': 'Created'}),201
 
 
