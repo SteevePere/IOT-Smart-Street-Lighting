@@ -13,7 +13,7 @@
   	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
   	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
   	<!-- Title -->
-  	<title>Gérér ma Conso</title>
+  	<title>Mon Parc d'Eclairage</title>
   	<!-- Custom styles -->
   	<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style/style.css') }}">
     <!-- Leaflet -->
@@ -26,8 +26,8 @@
 <body>
 
 		<nav class="navbar navbar-inverse navbar-fixed-top navbar-light bg-light" role="navigation">
-			<a class="navbar-brand" href="/getEvents">Gérer ma Conso</a>
-      <a href="/signIn"><img src="/static/images/logout.png" title="Déconnexion" style="margin-left: 77%; margin-top: 5px; height: 40px; width: 40px;"></img></a>
+			<a class="navbar-brand" href="/getEvents">Mon Parc</a>
+      <a href="/signIn"><img src="/static/images/logout.png" title="Déconnexion" style="margin-left: 87%; margin-top: 5px; height: 40px; width: 40px;"></img></a>
 			<div class="collapse navbar-collapse" id="navbarSupportedContent"></div>
 		</nav>
 
@@ -36,14 +36,16 @@
 		<br>
 		<br>
 
+
+
 		<div>
-			<h1>Ma conso</h1>
+			<h1>Mes équipements</h1>
 		</div>
 
-    <div id="map" style="height: 550px; margin-bottom: 30px;"></div>
+    <div id="map" style="height: 650px; margin-bottom: 30px;"></div>
 
 		<div style= "background-color: rgb(42, 63, 84); padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px;">
-      <h1 style="color: white; text-align: center;">Evènements la nuit du {{ date }}</h1>
+      <h1 style="color: white; font-size: 25px; text-align: center;">Allumages par rue, la nuit du {{ date }}</h1>
       <form action="{{ url_for('getEvents') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
         <div class="form-group">
   				<d1>
@@ -54,17 +56,16 @@
         <div class="form-group">
   				<d1>
             <select class="form-control" id="interval" required name="interval" style="width: 200px;">
-              <option value="" disabled selected>Echelle...</option>
               <option value="5m">5 Minutes</option>
               <option value="15m">15 Minutes</option>
               <option value="30m">30 Minutes</option>
-              <option value="1h">1 Heure</option>
+              <option value="1h" selected>1 Heure</option>
             </select>
   				</d1>
   			</div>
         <div class="form-group">
   				<d1>
-            <input id="filter" type=submit value="Filtrer" class="btn btn-success">
+            <input id="filter" type=submit value="Visualiser" class="btn btn-success">
   				</d1>
   			</div>
   		</form>
@@ -73,18 +74,18 @@
 
     </div>
 
-    <div style= "background-color: rgb(42, 63, 84); padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px;">
-      <h1 style="color: white; text-align: center;">Evènements la semaine du {{ date }} au {{ date }}</h1>
+    <div style= "background-color: rgba(42, 63, 84); padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px;">
+      <h1 style="color: white; font-size: 25px; text-align: center;">Allumages par rue, la semaine du {{ week_monday_date }}</h1>
       <form action="{{ url_for('getEvents') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
         <div class="form-group">
   				<d1>
-            <input type="week" required class="form-control" id="week" name="week" value="week" style="width: 200px;">
+            <input type="week" required class="form-control" id="week" name="week" value="{{ week }}" style="width: 200px;">
             <input type="hidden" name="action" value="per_week">
   				</d1>
   			</div>
         <div class="form-group">
   				<d1>
-            <input id="filter" type=submit value="Filtrer" class="btn btn-success">
+            <input id="filter" type=submit value="Visualiser" class="btn btn-success">
   				</d1>
   			</div>
   		</form>
@@ -133,11 +134,11 @@
 
     {% if device.status == 0 %}
       L.marker([{{device.latitude}},{{device.longitude}}], {icon: redIcon}).addTo(map)
-      .bindPopup("Device {{device.device}} </br> Status: OFF").openPopup();
+      .bindPopup("Device {{device.device}} </br> Status: OFF");
 
     {% else %}
       L.marker([{{device.latitude}},{{device.longitude}}]).addTo(map)
-      .bindPopup("Device {{device.device}} </br> Status: ON").openPopup();
+      .bindPopup("Device {{device.device}} </br> Status: ON");
 
     {% endif %}
 
@@ -236,6 +237,22 @@
   // get chart canvas
   var ctx = document.getElementById("dayChart").getContext("2d");
 
+  var green_gradient = ctx.createLinearGradient(0, 0, 0, 850);
+  green_gradient.addColorStop(0.9, 'rgba(92,184,92,1)');
+  green_gradient.addColorStop(0.5, 'rgba(92,184,92,0.5)');
+  green_gradient.addColorStop(1, 'rgba(92,184,92,0.2)');
+
+  var blue_gradient = ctx.createLinearGradient(0, 0, 0, 850);
+  blue_gradient.addColorStop(0.9, 'rgba(75,192,192,1)');
+  blue_gradient.addColorStop(0.5, 'rgba(75,192,192,.5)');
+  blue_gradient.addColorStop(1, 'rgba(75,192,192,0.2)');
+
+  var red_gradient = ctx.createLinearGradient(0, 0, 0, 850);
+  red_gradient.addColorStop(0.9, 'rgba(255, 51, 51, 1)');
+  red_gradient.addColorStop(0.3, 'rgba(255, 51, 51, .5)');
+  red_gradient.addColorStop(1, 'rgba(255, 51, 51, 0.2)');
+
+
   // create the chart using the chart canvas
   var dayChart = new Chart(ctx, {
     type: 'line',
@@ -273,9 +290,9 @@
         label: 'Rue Lénine',
         fill: false,
         lineTension: .3,
-        backgroundColor: "rgba(75,192,192,1)",
+        backgroundColor: blue_gradient,
         borderColor: "rgba(75,192,192,0.4)",
-        borderWidth: 1.5,
+        borderWidth: 0,
         borderCapStyle: 'butt',
         borderDash: [],
         borderDashOffset: 0.0,
@@ -298,9 +315,9 @@
         label: 'Rue Maurice Grandcoing',
         fill: false,
         lineTension: .3,
-        backgroundColor: "#ff3333",
+        backgroundColor: red_gradient,
         borderColor: "#ff3333",
-        borderWidth: 1.5,
+        borderWidth: 0,
         borderCapStyle: 'butt',
         borderDash: [],
         borderDashOffset: 0.0,
@@ -323,9 +340,9 @@
         label: 'Rue Toto',
         fill: false,
         lineTension: .3,
-        backgroundColor: "#5cb85c",
+        backgroundColor: green_gradient,
         borderColor: "#5cb85c",
-        borderWidth: 1.5,
+        borderWidth: 0,
         borderCapStyle: 'butt',
         borderDash: [],
         borderDashOffset: 0.0,
@@ -351,7 +368,7 @@
 
   // create the chart using the chart canvas
   var weekChart = new Chart(ctx, {
-    type: 'line',
+    type: 'bar',
     data: week_chartData,
     options: {
         legend: {

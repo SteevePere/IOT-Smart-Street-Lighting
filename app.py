@@ -66,12 +66,18 @@ def getEvents():
     streets = ['Lenine', 'Toto', 'Maurice_Grandcoing']
     date = "2019-01-19"
     interval = '1h'
-    week = '2019-W02'
+    week = '2019-W03'
 
     if (request.method == 'POST'):
 
-        date = request.form['period']
-        interval = request.form['interval']
+        if (request.form['action'] == "per_day"):
+
+            date = request.form['period']
+            interval = request.form['interval']
+
+        if (request.form['action'] == "per_week"):
+
+            week = request.form['week']
 
     Lenine_times = []
     Lenine_counts = []
@@ -87,7 +93,7 @@ def getEvents():
 
     import time
     import datetime
-    from_week_day = datetime.datetime.strptime(week + '-1', "%Y-W%W-%w")
+    from_week_day = datetime.datetime.strptime(week + '-1', "%Y-W%W-%w") - datetime.timedelta(days=7)
     monday_date = str(from_week_day.date())
     week_start_timestamp = int(time.mktime(datetime.datetime.strptime(monday_date, "%Y-%m-%d").timetuple())) * 1000000000
     week_end_timestamp = week_start_timestamp + 604800000000000
@@ -103,6 +109,7 @@ def getEvents():
         # week
         weekly_events = dbcon.query("select count(lumens) from events where street = '{0}' and time >= {1} AND time <= {2} group by time(1d)".format(street, week_start_timestamp, week_end_timestamp))
         weekly_event_points = list(weekly_events.get_points())
+        weekly_event_points = weekly_event_points[1:] #truncating list to account for influxdb's group by day (starts with previous day...)
 
         for event in event_points:
             event_time = "Z".join(event["time"].split('Z')[0:1])
@@ -134,17 +141,20 @@ def getEvents():
     tabledata2 = dbcon.query('SELECT * FROM devices')
     all_devices = list(tabledata2.get_points(measurement='devices'))
 
-    return render_template('allEvents.html', date=date, events=all_events, devices=all_devices, Lenine_values=Lenine_counts, MG_values=Maurice_Grandcoing_counts, Toto_values=Toto_counts, Lenine_week_values=Lenine_week_counts, Toto_week_values=Toto_week_counts, MG_week_values=Maurice_Grandcoing_week_counts, days=days, labels=Lenine_times),200
+    date = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y')
+    monday_date = datetime.datetime.strptime(monday_date, '%Y-%m-%d').strftime('%d/%m/%Y')
+
+    return render_template('allEvents.html', week=week, date=date, events=all_events, devices=all_devices, Lenine_values=Lenine_counts, MG_values=Maurice_Grandcoing_counts, Toto_values=Toto_counts, week_monday_date=monday_date, Lenine_week_values=Lenine_week_counts, Toto_week_values=Toto_week_counts, MG_week_values=Maurice_Grandcoing_week_counts, days=days, labels=Lenine_times),200
 
 #Post one event
 @app.route('/postEvent', methods=['POST'])
 
 def postEvent():
-    time = 1547917200
+    time = 1548979200
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
 
-    for i in range(154):
+    for i in range(144):
         json_body = [
             {
                 "measurement": "events",
@@ -159,7 +169,7 @@ def postEvent():
             }
         ]
         dbcon.write_points(json_body, time_precision='s')
-        time += 4351
+        time += 600
     return jsonify({'code':201,'message': 'Created'}),201
 
 #ERROR ROUTE
