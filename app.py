@@ -66,6 +66,7 @@ def getEvents():
     streets = ['Lenine', 'Toto', 'Maurice_Grandcoing']
     date = "2019-01-19"
     interval = '1h'
+    week = '2019-W02'
 
     if (request.method == 'POST'):
 
@@ -76,19 +77,32 @@ def getEvents():
     Lenine_counts = []
     Toto_times = []
     Toto_counts = []
-    Maurice_Grandcoing_times = []
     Maurice_Grandcoing_counts = []
+
+    Maurice_Grandcoing_times = []
+    Maurice_Grandcoing_week_counts = []
+    Toto_week_counts = []
+    Lenine_week_counts = []
+    days = []
 
     import time
     import datetime
+    from_week_day = datetime.datetime.strptime(week + '-1', "%Y-W%W-%w")
+    monday_date = str(from_week_day.date())
+    week_start_timestamp = int(time.mktime(datetime.datetime.strptime(monday_date, "%Y-%m-%d").timetuple())) * 1000000000
+    week_end_timestamp = week_start_timestamp + 604800000000000
     timestamp = int(time.mktime(datetime.datetime.strptime(date, "%Y-%m-%d").timetuple()))
     time_from = (timestamp + 68400) * 1000000000 #from 6
     time_to = time_from + 43200000000000 #to 6
 
     for street in streets:
 
+        # day
         events = dbcon.query("select count(lumens) from events where street = '{0}' and time <= {1} AND time >= {2} group by time({3})".format(street, time_to, time_from, interval))
         event_points = list(events.get_points())
+        # week
+        weekly_events = dbcon.query("select count(lumens) from events where street = '{0}' and time >= {1} AND time <= {2} group by time(1d)".format(street, week_start_timestamp, week_end_timestamp))
+        weekly_event_points = list(weekly_events.get_points())
 
         for event in event_points:
             event_time = "Z".join(event["time"].split('Z')[0:1])
@@ -104,23 +118,28 @@ def getEvents():
                 Maurice_Grandcoing_times.append(event_time)
                 Maurice_Grandcoing_counts.append(event["count"])
 
-        MG_legend = 'Rue Maurice Grandcoing'
-        Toto_legend = 'Rue Toto'
-        Lenine_legend = 'Rue Lenine'
+        for event in weekly_event_points:
+            event_date = "Z".join(event["time"].split('Z')[0:1])
+            event_date = "T".join(event_date.split('T')[:1])
+            days.append(event_date)
+            if (street == 'Lenine'):
+                Lenine_week_counts.append(event["count"])
+            if (street == 'Toto'):
+                Toto_week_counts.append(event["count"])
+            if (street == 'Maurice_Grandcoing'):
+                Maurice_Grandcoing_week_counts.append(event["count"])
 
     tabledata = dbcon.query('SELECT * FROM events')
     all_events = list(tabledata.get_points(measurement='events'))
     tabledata2 = dbcon.query('SELECT * FROM devices')
     all_devices = list(tabledata2.get_points(measurement='devices'))
 
-    return render_template('allEvents.html', date=date, events=all_events, devices=all_devices, Lenine_values=Lenine_counts, MG_values=Maurice_Grandcoing_counts, Toto_values=Toto_counts, labels=Lenine_times, Lenine_legend=Lenine_legend, MG_legend=MG_legend, Toto_legend=Toto_legend),200
+    return render_template('allEvents.html', date=date, events=all_events, devices=all_devices, Lenine_values=Lenine_counts, MG_values=Maurice_Grandcoing_counts, Toto_values=Toto_counts, Lenine_week_values=Lenine_week_counts, Toto_week_values=Toto_week_counts, MG_week_values=Maurice_Grandcoing_week_counts, days=days, labels=Lenine_times),200
 
 #Post one event
 @app.route('/postEvent', methods=['POST'])
 
 def postEvent():
-    # import time;
-    # time = int(time.time())
     time = 1547917200
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
@@ -142,29 +161,6 @@ def postEvent():
         dbcon.write_points(json_body, time_precision='s')
         time += 4351
     return jsonify({'code':201,'message': 'Created'}),201
-
-
-# def cronJob():
-#     time_now = os_time
-#     time_48_h_ago = time_now - 48 h
-#     time_72_h_ago = time_now - 72 h
-#
-#     devices = select * distinct(id) from events
-#
-#     for device in devices:
-#
-#     event = select from events where device_id = device.id and timestamp between time_now and time_48_h_ago
-#
-#     if (!event):
-#         if (device.status == 1):
-#             set device_status = 0.5
-#         else if (device.status == 0.5):
-#             event = select from events where device_id = device.id and timestamp between time_now and time_72_h_ago
-#             if (!event):
-#                 set device_status = 0
-# 		else if (event and device.status == 0.5 or device.status = 0):
-#             set device_status = 1
-
 
 #ERROR ROUTE
 @app.errorhandler(404)
