@@ -1,4 +1,6 @@
+# coding=utf-8
 # -- IMPORTS --
+from __future__ import unicode_literals
 import hashlib
 from flask import Flask, request, jsonify, redirect, url_for, render_template
 from flaskext.mysql import MySQL
@@ -54,6 +56,36 @@ def signIn():
             error = "Identifiant ou mot de passe incorrect !"
             return render_template('login.html', error=error),401
     return render_template('login.html'),200
+
+@app.route('/admin', methods=['GET', 'POST'])
+
+def create_settings():
+
+    settings = []
+    cursor.execute("SELECT * FROM alerts")
+    rows = cursor.fetchall()
+    columns = [desc[0] for desc in cursor.description]
+    for row in rows:
+        row = dict(zip(columns,row))
+        settings.append(row)
+
+    warning_delay = settings[0]['warning_threshold']
+    alert_delay = settings[0]['alert_threshold']
+
+    if (request.method == 'POST'):
+        warning_delay = request.form['warning']
+        alert_delay = request.form['alert']
+        error = ''
+
+        if (alert_delay > warning_delay):
+            cursor.execute("UPDATE alerts SET warning_threshold = (%s), alert_threshold = (%s);", (warning_delay, alert_delay))
+            return redirect('/getEvents')
+        else:
+            error = "Le seuil de déclenchement d'alerte doit être supérieur au seuil de déclenchement du monitoring !"
+            return render_template('admin.html', error=error),400
+
+    return render_template('admin.html', warning=warning_delay, alert=alert_delay),200
+
 
 #Get all events
 @app.route('/getEvents', methods=['GET', 'POST'])
@@ -179,4 +211,4 @@ def not_found(error):
 	return jsonify({'code':404,'message': 'Not Found'}),404
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='192.168.0.40', port=8000)
