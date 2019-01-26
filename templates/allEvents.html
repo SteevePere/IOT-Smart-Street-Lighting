@@ -20,6 +20,11 @@
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
     <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
     <script src='static/Chart.min.js'></script>
+    <!-- Hightchart (Zoomable Timeseries) -->
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
 
 </head>
 
@@ -45,38 +50,12 @@
 
     <div id="map" style="height: 650px; margin-bottom: 30px;"></div>
 
-		<div style= "background-color: rgb(42, 63, 84); padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px;">
-      <h1 style="color: white; font-size: 25px; text-align: center;">Allumages par rue, la nuit du {{ date }}</h1>
-      <form action="{{ url_for('getEvents') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
-        <div class="form-group">
-  				<d1>
-            <input type="date" required class="form-control" value="{{ date }}" id="period" name="period" style="width: 200px;">
-            <input type="hidden" name="action" value="per_day">
-  				</d1>
-  			</div>
-        <div class="form-group">
-  				<d1>
-            <select class="form-control" id="interval" required name="interval" style="width: 200px;">
-              <option value="5m">5 Minutes</option>
-              <option value="15m">15 Minutes</option>
-              <option value="30m">30 Minutes</option>
-              <option value="1h" selected>1 Heure</option>
-            </select>
-  				</d1>
-  			</div>
-        <div class="form-group">
-  				<d1>
-            <input id="filter" type=submit value="Visualiser" class="btn btn-success">
-  				</d1>
-  			</div>
-  		</form>
-
-      <canvas id="dayChart" style="padding: 10px;"></canvas>
-
+    <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid black; margin-top: 0px; margin-bottom: 30px;">
+      <div id="container" style="min-width: 310px; height: 600px; margin: 0 auto"></div>
     </div>
 
-    <div style= "background-color: rgba(42, 63, 84); padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px;">
-      <h1 style="color: white; font-size: 25px; text-align: center;">Allumages par rue, la semaine du {{ week_monday_date }}</h1>
+    <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid black; margin-top: 0px; margin-bottom: 30px;">
+      <h1 style="font-size: 25px; text-align: center;">Focus semaine du {{ week_monday_date }}</h1>
       <form action="{{ url_for('getEvents') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
         <div class="form-group">
   				<d1>
@@ -95,24 +74,9 @@
 
     </div>
 
-
-
 </body>
 
-<script type="text/javascript">
-
-  $.fn.dataTable.ext.classes.sLengthSelect = 'btn-sm btn-secondary dropdown-toggle';
-  $.fn.dataTable.ext.classes.sFilterInput = 'form-control input-sm';
-  $('#tablebalanceBTC_filter input[type="search"]').attr('placeholder', 'Table search');
-  $(document).ready(function() {
-      $('#list').DataTable( {
-          "dom": '<"top"fl>rt<"bottom"ip><"clear">',
-  				language: {
-  					search: "",
-  					searchPlaceholder: "Rechercher..."
-  				},
-  		} );
-  } );
+<script>
 
   //LEAFLET
 
@@ -149,139 +113,23 @@
 
   //ChartJS
 
-  // Global parameters:
-  // do not resize the chart canvas when its container does (keep at 600x400px)
-  Chart.defaults.global.responsive = false;
-
-  // define the chart data
-  var chartData = {
-    labels : [{% for item in labels %}
-               "{{item}}",
-              {% endfor %}],
-    datasets : [{
-        label: 'Rue Lénine',
-        fill: false,
-        lineTension: .3,
-        backgroundColor: "rgba(75,192,192,1)",
-        borderColor: "rgba(75,192,192,0.4)",
-        borderWidth: 1.5,
-        borderCapStyle: 'butt',
-        borderDash: [],
-        borderDashOffset: 0.0,
-        borderJoinStyle: 'miter',
-        pointBorderColor: "rgba(75,192,192,1)",
-        pointBackgroundColor: "#fff",
-        pointBorderWidth: 1,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: "rgba(75,192,192,1)",
-        pointHoverBorderColor: "rgba(220,220,220,1)",
-        pointHoverBorderWidth: 2,
-        pointRadius: 1,
-        pointHitRadius: 10,
-        data : [{% for item in Lenine_values %}
-                  {{item}},
-                {% endfor %}],
-        spanGaps: false
-    },
-    {
-        label: 'Rue Maurice Grandcoing',
-        fill: false,
-        lineTension: .3,
-        backgroundColor: "#ff3333",
-        borderColor: "#ff3333",
-        borderWidth: 1.5,
-        borderCapStyle: 'butt',
-        borderDash: [],
-        borderDashOffset: 0.0,
-        borderJoinStyle: 'miter',
-        pointBorderColor: "rgba(75,192,192,1)",
-        pointBackgroundColor: "#fff",
-        pointBorderWidth: 1,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: "rgba(75,192,192,1)",
-        pointHoverBorderColor: "rgba(220,220,220,1)",
-        pointHoverBorderWidth: 2,
-        pointRadius: 1,
-        pointHitRadius: 10,
-        data : [{% for item in MG_values %}
-                  {{item}},
-                {% endfor %}],
-        spanGaps: false
-    },
-    {
-        label: 'Rue Toto',
-        fill: false,
-        lineTension: .3,
-        backgroundColor: "#5cb85c",
-        borderColor: "#5cb85c",
-        borderWidth: 1.5,
-        borderCapStyle: 'butt',
-        borderDash: [],
-        borderDashOffset: 0.0,
-        borderJoinStyle: 'miter',
-        pointBorderColor: "rgba(75,192,192,1)",
-        pointBackgroundColor: "#fff",
-        pointBorderWidth: 1,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: "rgba(75,192,192,1)",
-        pointHoverBorderColor: "rgba(220,220,220,1)",
-        pointHoverBorderWidth: 2,
-        pointRadius: 1,
-        pointHitRadius: 10,
-        data : [{% for item in Toto_values %}
-                  {{item}},
-                {% endfor %}],
-        spanGaps: false
-    }]
-  }
-
   // get chart canvas
-  var ctx = document.getElementById("dayChart").getContext("2d");
+  var ctx = document.getElementById("weekChart").getContext("2d");
 
-  var green_gradient = ctx.createLinearGradient(0, 0, 0, 850);
+  var green_gradient = ctx.createLinearGradient(0, 0, 0, 950);
   green_gradient.addColorStop(0.9, 'rgba(92,184,92,1)');
-  green_gradient.addColorStop(0.5, 'rgba(92,184,92,0.5)');
-  green_gradient.addColorStop(1, 'rgba(92,184,92,0.2)');
+  green_gradient.addColorStop(0.5, 'rgba(92,184,92,0.7)');
+  green_gradient.addColorStop(1, 'rgba(92,184,92,0.3)');
 
   var blue_gradient = ctx.createLinearGradient(0, 0, 0, 850);
   blue_gradient.addColorStop(0.9, 'rgba(75,192,192,1)');
-  blue_gradient.addColorStop(0.5, 'rgba(75,192,192,.5)');
-  blue_gradient.addColorStop(1, 'rgba(75,192,192,0.2)');
+  blue_gradient.addColorStop(0.5, 'rgba(75,192,192,.7)');
+  blue_gradient.addColorStop(1, 'rgba(75,192,192,0.3)');
 
   var red_gradient = ctx.createLinearGradient(0, 0, 0, 850);
   red_gradient.addColorStop(0.9, 'rgba(255, 51, 51, 1)');
-  red_gradient.addColorStop(0.3, 'rgba(255, 51, 51, .5)');
-  red_gradient.addColorStop(1, 'rgba(255, 51, 51, 0.2)');
-
-
-  // create the chart using the chart canvas
-  var dayChart = new Chart(ctx, {
-    type: 'line',
-    data: chartData,
-    options: {
-        legend: {
-            labels: {
-                fontColor: "white",
-                padding: 20
-            }
-        },
-        scales: {
-            yAxes: [{
-                ticks: {
-                    fontColor: "white",
-                    beginAtZero: true
-                }
-            }],
-            xAxes: [{
-                ticks: {
-                    fontColor: "white",
-                    beginAtZero: true
-                }
-            }]
-        },
-        responsive: true
-      },
-  });
+  red_gradient.addColorStop(0.3, 'rgba(255, 51, 51, .7)');
+  red_gradient.addColorStop(1, 'rgba(255, 51, 51, 0.3)');
 
   //weekChart
 
@@ -364,9 +212,6 @@
     }]
   }
 
-  // get chart canvas
-  var ctx = document.getElementById("weekChart").getContext("2d");
-
   // create the chart using the chart canvas
   var weekChart = new Chart(ctx, {
     type: 'bar',
@@ -374,20 +219,17 @@
     options: {
         legend: {
             labels: {
-                fontColor: "white",
                 padding: 20
             }
         },
         scales: {
             yAxes: [{
                 ticks: {
-                    fontColor: "white",
                     beginAtZero: true
                 }
             }],
             xAxes: [{
                 ticks: {
-                    fontColor: "white",
                     beginAtZero: true
                 }
             }]
@@ -396,4 +238,68 @@
       },
   });
 
+  //HighCharts, zoomable timeseries
+  $( document ).ready(function() {
+
+      Highcharts.chart('container', {
+          chart: {
+              zoomType: 'x'
+          },
+          title: {
+              text: 'Fréquentation par Rue'
+          },
+          subtitle: {
+              text: document.ontouchstart === undefined ?
+                      'Cliquer-glisser pour zoomer' : 'Pincer avec deux doigts pour zoomer'
+          },
+          xAxis: {
+              type: 'datetime'
+          },
+          yAxis: {
+              title: {
+                  text: 'Evènements'
+              },
+              min: 0
+          },
+          legend: {
+              enabled: true
+          },
+          plotOptions: {
+              area: {
+                  fillColor: {
+                      linearGradient: {
+                          x1: 0,
+                          y1: 0,
+                          x2: 0,
+                          y2: 1
+                      },
+                      stops: [
+                          [0, Highcharts.getOptions().colors[0]],
+                          [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                      ]
+                  },
+                  marker: {
+                      radius: 2
+                  },
+                  lineWidth: 1,
+                  states: {
+                      hover: {
+                          lineWidth: 1
+                      }
+                  },
+                  threshold: null
+              }
+          },
+
+          series: [
+          {% for set in data %}
+            {
+                type: 'area',
+                name: '{{ set[0] }}',
+                data: {{ set[1] }}
+            },
+          {% endfor %}
+          ]
+      });
+  });
 </script>

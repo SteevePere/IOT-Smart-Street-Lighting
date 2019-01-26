@@ -25,6 +25,40 @@ mysql.init_app(app)
 conn = mysql.connect()
 cursor = conn.cursor()
 
+def highChart():
+
+    import time
+    import datetime
+
+    dbcon = influx_db.connection
+    dbcon.switch_database(database='pli')
+
+    year = 1546297200000000000 #01/01/2019
+    streets = ['Lenine', 'Toto', 'Maurice_Grandcoing']
+    set = []
+    data = []
+
+    for street in streets:
+
+        events_array = []
+        set = []
+
+        events = dbcon.query("select count(lumens) from events where street = '{0}' and time > {1} group by time(30m)".format(street, year))
+        event_points = list(events.get_points())
+
+        for event in event_points:
+            event_array = []
+            timestamp = int(time.mktime(datetime.datetime.strptime(event['time'], "%Y-%m-%dT%H:%M:%SZ").timetuple()) * 1000)
+            event_array.append(timestamp)
+            event_array.append(event['count'])
+            events_array.append(event_array)
+
+        set.append(street)
+        set.append(events_array)
+        data.append(set)
+
+    return(data)
+
 # -- ROUTES --
 
 #ALL USERS
@@ -130,6 +164,7 @@ def getEvents():
     week_start_timestamp = int(time.mktime(datetime.datetime.strptime(monday_date, "%Y-%m-%d").timetuple())) * 1000000000
     week_end_timestamp = week_start_timestamp + 604800000000000
     timestamp = int(time.mktime(datetime.datetime.strptime(date, "%Y-%m-%d").timetuple()))
+    print (timestamp)
     time_from = (timestamp + 68400) * 1000000000 #from 6
     time_to = time_from + 43200000000000 #to 6
 
@@ -176,7 +211,9 @@ def getEvents():
     date = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y')
     monday_date = datetime.datetime.strptime(monday_date, '%Y-%m-%d').strftime('%d/%m/%Y')
 
-    return render_template('allEvents.html', week=week, date=date, events=all_events, devices=all_devices, Lenine_values=Lenine_counts, MG_values=Maurice_Grandcoing_counts, Toto_values=Toto_counts, week_monday_date=monday_date, Lenine_week_values=Lenine_week_counts, Toto_week_values=Toto_week_counts, MG_week_values=Maurice_Grandcoing_week_counts, days=days, labels=Lenine_times),200
+    data = highChart()
+
+    return render_template('allEvents.html', week=week, date=date, events=all_events, devices=all_devices, Lenine_values=Lenine_counts, MG_values=Maurice_Grandcoing_counts, Toto_values=Toto_counts, week_monday_date=monday_date, Lenine_week_values=Lenine_week_counts, Toto_week_values=Toto_week_counts, MG_week_values=Maurice_Grandcoing_week_counts, days=days, labels=Lenine_times, data=data),200
 
 #Post one event
 @app.route('/postEvent', methods=['POST'])
@@ -211,4 +248,4 @@ def not_found(error):
 	return jsonify({'code':404,'message': 'Not Found'}),404
 
 if __name__ == "__main__":
-    app.run(host='192.168.0.40', port=8000)
+    app.run(host='0.0.0.0', port=8000)
