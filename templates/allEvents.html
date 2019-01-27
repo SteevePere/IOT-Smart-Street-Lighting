@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang = "en-US">
 
 <head>
@@ -45,16 +45,18 @@
 
 
 		<div>
-			<h1>Mes équipements</h1>
+			<h1>Mon Parc</h1>
 		</div>
 
-    <div id="map" style="height: 650px; margin-bottom: 30px;"></div>
+    <div style= "background-color: white; padding: 0px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+      <div id="map" style="height: 650px; border-radius: 10px;"></div>
+    </div>
 
-    <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid black; margin-top: 0px; margin-bottom: 30px;">
+    <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
       <div id="container" style="min-width: 310px; height: 600px; margin: 0 auto"></div>
     </div>
 
-    <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid black; margin-top: 0px; margin-bottom: 30px;">
+    <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
       <h1 style="font-size: 25px; text-align: center;">Focus semaine du {{ week_monday_date }}</h1>
       <form action="{{ url_for('getEvents') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
         <div class="form-group">
@@ -80,7 +82,12 @@
 
   //LEAFLET
 
-  var map = L.map('map').setView([48.8145722,2.3904915], 13);
+  var map = L.map('map').setView(
+    {% if OffDevices != [] %}
+        [{{OffDevices.latitude}},{{OffDevices.longitude}}], 18);
+    {% else %}
+      [48.8126508,2.3881197], 15);
+    {% endif %}
   var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
   });
 
@@ -95,19 +102,64 @@
       popupAnchor:  [0, -50]
   });
 
+  var orangeIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+
+      iconSize:     [25, 41],
+      shadowSize:   [41, 41],
+      iconAnchor:   [12, 41],
+      shadowAnchor: [4, 62],
+      popupAnchor:  [0, -50]
+  });
+
+  var greenIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+
+      iconSize:     [25, 41],
+      shadowSize:   [41, 41],
+      iconAnchor:   [12, 41],
+      shadowAnchor: [4, 62],
+      popupAnchor:  [0, -50]
+  });
+
   {% for device in devices %}
 
     {% if device.status == 0 %}
       L.marker([{{device.latitude}},{{device.longitude}}], {icon: redIcon}).addTo(map)
-      .bindPopup("Device {{device.device}} </br> Status: OFF");
+      .bindPopup("<b> Device {{device.device}} </b> </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}").openPopup();
+
+    {% elif device.status == 0.5 %}
+      L.marker([{{device.latitude}},{{device.longitude}}], {icon: orangeIcon}).addTo(map)
+      .bindPopup("<b> Device {{device.device}} </b> </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
 
     {% else %}
-      L.marker([{{device.latitude}},{{device.longitude}}]).addTo(map)
-      .bindPopup("Device {{device.device}} </br> Status: ON");
+      L.marker([{{device.latitude}},{{device.longitude}}], {icon: greenIcon}).addTo(map)
+      .bindPopup("<b> Device {{device.device}} </b> </br> ---------------- </br> Status: ON");
 
     {% endif %}
 
   {% endfor %}
+
+  var legend = L.control({position: 'bottomleft'});
+
+  legend.onAdd = function (map) {
+
+      var div = L.DomUtil.create('div', 'info legend'),
+          grades = ["Fonctionnel", "À Surveiller", "Défectueux"],
+          labels = ["https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png","https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png", "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png"];
+
+      // loop through our density intervals and generate a label with a colored square for each interval
+      for (var i = 0; i < grades.length; i++) {
+          div.innerHTML +=
+               (" <img src="+ labels[i] +" height='41' width='25' style='margin-bottom:5px; margin-right:5px'>") + grades[i] +'<br>';
+      }
+
+      return div;
+  };
+
+  legend.addTo(map);
 
   map.addLayer(layer);
 
@@ -245,8 +297,9 @@
           chart: {
               zoomType: 'x'
           },
+          colors: ['#CB2940', '#5cb85c', '#6699ff'],
           title: {
-              text: 'Fréquentation par Rue'
+              text: 'Mes Données par Rue'
           },
           subtitle: {
               text: document.ontouchstart === undefined ?
@@ -265,7 +318,7 @@
               enabled: true
           },
           plotOptions: {
-              area: {
+              spline: {
                   fillColor: {
                       linearGradient: {
                           x1: 0,
@@ -274,8 +327,6 @@
                           y2: 1
                       },
                       stops: [
-                          [0, Highcharts.getOptions().colors[0]],
-                          [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
                       ]
                   },
                   marker: {
@@ -294,7 +345,7 @@
           series: [
           {% for set in data %}
             {
-                type: 'area',
+                type: 'spline',
                 name: '{{ set[0] }}',
                 data: {{ set[1] }}
             },

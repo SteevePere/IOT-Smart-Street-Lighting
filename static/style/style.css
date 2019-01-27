@@ -4,6 +4,7 @@ body {
 	margin-top: 5%;
 	max-width: 65%;
 	margin: auto;
+	text-align: left;
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-attachment: fixed;
@@ -12,8 +13,8 @@ body {
 
 h1 {
 	color: #333;
-	text-align: left;
-	font-size: 30px;
+	font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
+	font-size: 18px;
 }
 
 h2 {
@@ -153,4 +154,12 @@ table.dataTable tbody tr:nth-of-type(odd) {
 
 .modal-open {
 	padding-right: 0px !important;
+}
+
+/* Leaflet */
+
+.leaflet-left .leaflet-control {
+    background: rgba(255,255,255,0.6) !important;
+    padding: 15px !important;
+    border-radius: 10px !important;
 }
