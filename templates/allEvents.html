@@ -127,16 +127,22 @@
   {% for device in devices %}
 
     {% if device.status == 0 %}
-      L.marker([{{device.latitude}},{{device.longitude}}], {icon: redIcon}).addTo(map)
-      .bindPopup("<b> Device {{device.device}} </b> </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}").openPopup();
+      L.marker([{{device.latitude}},{{device.longitude}}], {icon: redIcon}).on('click', function() {
+        centerLeafletMapOnMarker(map, this);
+      }).addTo(map)
+      .bindPopup("<b> Device {{device.device}} </b>  </br> Défectueux </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}").openPopup();
 
     {% elif device.status == 0.5 %}
-      L.marker([{{device.latitude}},{{device.longitude}}], {icon: orangeIcon}).addTo(map)
-      .bindPopup("<b> Device {{device.device}} </b> </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
+      L.marker([{{device.latitude}},{{device.longitude}}], {icon: orangeIcon}).on('click', function() {
+      centerLeafletMapOnMarker(map, this);
+    }).addTo(map)
+      .bindPopup("<b> Device {{device.device}} </b>  </br> À Surveiller </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
 
     {% else %}
-      L.marker([{{device.latitude}},{{device.longitude}}], {icon: greenIcon}).addTo(map)
-      .bindPopup("<b> Device {{device.device}} </b> </br> ---------------- </br> Status: ON");
+      L.marker([{{device.latitude}},{{device.longitude}}], {icon: greenIcon}).on('click', function() {
+      centerLeafletMapOnMarker(map, this);
+    }).addTo(map)
+      .bindPopup("<b> Device {{device.device}} </b> </br> Fonctionnel </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
 
     {% endif %}
 
@@ -160,6 +166,12 @@
   };
 
   legend.addTo(map);
+
+  function centerLeafletMapOnMarker(map, marker) {
+    var latLngs = [ marker.getLatLng() ];
+    var markerBounds = L.latLngBounds(latLngs);
+    map.fitBounds(markerBounds);
+  }
 
   map.addLayer(layer);
 
