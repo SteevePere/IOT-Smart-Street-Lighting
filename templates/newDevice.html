@@ -29,41 +29,54 @@
 			<div class="collapse navbar-collapse" id="navbarSupportedContent"></div>
 		</nav>
 
-		<div style="margin-top: 150px;">
+		<div style="margin-top: 100px;">
 			<h1 style="text-align: center;">Ajouter un équipement</h1>
 		</div>
 
-		<br>
-		<br>
-		<br>
+
 		<br>
 
     <div style= "background-color: white; padding: 2px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
   		<div style= "padding: 15px; border-radius: 10px; margin-top: 0px;">
-        <!-- <form action="{{ url_for('create_device') }}" method="post" class="form" role="form"> -->
           <div class="form-group">
-            <label>Rue</label>
             <br>
     				<d1>
               <select class="form-control" id="street" required name="street" style="width: 300px;">
+                  <option value="none" disabled selected>Choisir une Rue...</option>
+                  <option value="other">Autre...</option>
                 {% for street in streets %}
                   <option value="{{ street }}">{{ street }}</option>
                 {% endfor %}
               </select>
-              <small style="font-size: 11px; color: white;">Par défaut, 72 heures - doit être supérieur au seuil de déclenchement du monitoring</small>
+              <br>
+              <div id="streetAlert" class="alert alert-danger alert-dismissible" style='display:none;'>Veuillez choisir une rue !
+                <button data-dismiss="alert" type="button" class="close" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
     				</d1>
     			</div>
         <div style= "background-color: white; padding: 0px; border-radius: 10px; border: 1px solid grey; margin-bottom: 20px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
           <div id="map" style="height: 650px; border-radius: 10px;"></div>
         </div>
+        <div id="geolocAlert" class="alert alert-danger alert-dismissible" style='display:none;'>Veuillez géolocaliser l'équipement !
+          <button data-dismiss="alert" type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
       <input id="submit" type=submit value="Sauvegarder" class="btn btn-success" style="margin-bottom: 0; margin-top: 0px; margin-left: 0;">
       <input type=button onclick="window.location='/getEvents';" value="Retour" class="btn btn-warning" style="margin-bottom: 0; margin-top: 0px;">
       <br>
+      <br>
+      <div id="successAlert" class="alert alert-success alert-dismissible" style='display:none;'>L'équipement a été créé avec succès !
+        <button data-dismiss="alert" type="button" class="close" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
       {% if error %}
         <br>
         <p style="color: #ff3333;">{{error}}</p>
       {% endif %}
-      <!-- </form> -->
     </div>
     </div>
 
@@ -111,12 +124,29 @@
   $(document).ready( function() {
         $('#submit').click(function() {
             var street = $('#street').find(":selected").text();
-            $.post(
-              "/newDevice",
-              { lat: lat, long: long, street: street }
-           ).done(function (reply) {
-              $('#reply').empty().append(reply);
-           });
+            if (street == "Choisir une Rue...") {
+                $("#streetAlert").fadeTo(1500, 500).slideUp(500, function(){
+                $("#streetAlert").slideUp(500);
+              });
+              return;
+            }
+            try {
+              $.post(
+                "/newDevice",
+                { lat: lat, long: long, street: street }
+             ).done(function (reply) {
+                $('#reply').empty().append(reply);
+                $("#successAlert").fadeTo(1500, 500).slideUp(500, function(){
+                  $("#successAlert").slideUp(500);
+                  location.reload()
+                });
+             });
+           }
+           catch (err) {
+             $("#geolocAlert").fadeTo(1500, 500).slideUp(500, function(){
+               $("#geolocAlert").slideUp(500);
+             });
+           }
         });
   });
 
