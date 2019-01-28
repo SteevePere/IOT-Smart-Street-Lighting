@@ -40,6 +40,17 @@ def getStreets():
 
     return(streets)
 
+def idIncrement():
+
+    dbcon = influx_db.connection
+    dbcon.switch_database(database='pli')
+
+    tabledata = dbcon.query('SELECT MAX(device) FROM devices')
+    max_device = list(tabledata.get_points(measurement='devices'))
+    id = max_device[0]['max']
+
+    return(id)
+
 def getDevices():
 
     dbcon = influx_db.connection
@@ -163,13 +174,36 @@ def create_settings():
 
 def create_device():
 
+    dbcon = influx_db.connection
+    dbcon.switch_database(database='pli')
+
+    streets = getStreets()
+
     if (request.method == 'POST'):
+
         lat = request.form.get('lat')
         long = request.form.get('long')
-        print(lat)
-        print(long)
+        street = request.form.get('street')
+        status = 1
+        id = idIncrement() + 1
 
-    return render_template('newDevice.html'),200
+        json_body = [
+            {
+                "measurement": "devices",
+                "tags": {
+                    "street": street,
+                    "latitude": lat,
+                    "longitude": long
+                },
+                "fields": {
+                    "status": status,
+                    "device": id
+                }
+            }
+        ]
+        dbcon.write_points(json_body)
+
+    return render_template('newDevice.html', streets=streets),200
 
 
 #Get all events

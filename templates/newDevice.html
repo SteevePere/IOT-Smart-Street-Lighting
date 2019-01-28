@@ -46,12 +46,9 @@
             <br>
     				<d1>
               <select class="form-control" id="street" required name="street" style="width: 300px;">
-                <option {% if alert == 12 %} selected {% endif %} value="12">12 Heures</option>
-                <option {% if alert == 24 %} selected {% endif %} value="24">24 Heures</option>
-                <option {% if alert == 36 %} selected {% endif %} value="36">36 Heures</option>
-                <option {% if alert == 48 %} selected {% endif %} value="48">48 Heures</option>
-                <option {% if alert == 72 %} selected {% endif %} value="72">72 Heures</option>
-                <option {% if alert == 96 %} selected {% endif %} value="96">96 Heures</option>
+                {% for street in streets %}
+                  <option value="{{ street }}">{{ street }}</option>
+                {% endfor %}
               </select>
               <small style="font-size: 11px; color: white;">Par défaut, 72 heures - doit être supérieur au seuil de déclenchement du monitoring</small>
     				</d1>
@@ -113,9 +110,10 @@
 
   $(document).ready( function() {
         $('#submit').click(function() {
-           $.post(
+            var street = $('#street').find(":selected").text();
+            $.post(
               "/newDevice",
-              { lat: lat, long: long }
+              { lat: lat, long: long, street: street }
            ).done(function (reply) {
               $('#reply').empty().append(reply);
            });
