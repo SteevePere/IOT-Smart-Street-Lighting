@@ -164,16 +164,10 @@ def create_settings():
 def create_device():
 
     if (request.method == 'POST'):
-        warning_delay = request.form['warning']
-        alert_delay = request.form['alert']
-        error = ''
-
-        if (alert_delay > warning_delay):
-            cursor.execute("UPDATE alerts SET warning_threshold = (%s), alert_threshold = (%s);", (warning_delay, alert_delay))
-            return redirect('/getEvents')
-        else:
-            error = "Le seuil de déclenchement d'alerte doit être supérieur au seuil de déclenchement du monitoring !"
-            return render_template('admin.html', error=error),400
+        lat = request.form.get('lat')
+        long = request.form.get('long')
+        print(lat)
+        print(long)
 
     return render_template('newDevice.html'),200
 
@@ -266,4 +260,4 @@ def not_found(error):
 	return jsonify({'code':404,'message': 'Not Found'}),404
 
 if __name__ == "__main__":
-    app.run(host='192.168.0.40', port=8000)
+    app.run(host='0.0.0.0', port=8000)
