@@ -42,6 +42,16 @@ def getStreets():
 
     return(streets)
 
+def cleanStreetNames(streets):
+
+    cleanStreets = []
+
+    for street in streets:
+        street = street.replace('_', ' ')
+        cleanStreets.append(street)
+
+    return cleanStreets
+
 def idIncrement():
 
     dbcon = influx_db.connection
@@ -207,15 +217,16 @@ def create_device():
     dbcon.switch_database(database='pli')
 
     streets = getStreets()
+    cleanStreets = cleanStreetNames(streets)
 
     if (request.method == 'POST'):
 
         lat = request.form.get('lat')
         long = request.form.get('long')
         street = request.form.get('street')
+        street = street.replace(' ', '_')
         status = 1
-        # id = idIncrement() + 1
-        id = 1
+        id = idIncrement() + 1
 
         json_body = [
             {
@@ -233,7 +244,7 @@ def create_device():
         ]
         dbcon.write_points(json_body)
 
-    return render_template('newDevice.html', streets=streets),200
+    return render_template('newDevice.html', streets=cleanStreets),200
 
 
 #Get all events

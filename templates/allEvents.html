@@ -177,22 +177,13 @@
   // get chart canvas
   var ctx = document.getElementById("weekChart").getContext("2d");
 
-  var green_gradient = ctx.createLinearGradient(0, 0, 0, 950);
-  green_gradient.addColorStop(0.9, 'rgba(92,184,92,1)');
-  green_gradient.addColorStop(0.5, 'rgba(92,184,92,0.7)');
-  green_gradient.addColorStop(1, 'rgba(92,184,92,0.3)');
-
-  var blue_gradient = ctx.createLinearGradient(0, 0, 0, 850);
-  blue_gradient.addColorStop(0.9, 'rgba(75,192,192,1)');
-  blue_gradient.addColorStop(0.5, 'rgba(75,192,192,.7)');
-  blue_gradient.addColorStop(1, 'rgba(75,192,192,0.3)');
-
-  var red_gradient = ctx.createLinearGradient(0, 0, 0, 850);
-  red_gradient.addColorStop(0.9, 'rgba(255, 51, 51, 1)');
-  red_gradient.addColorStop(0.3, 'rgba(255, 51, 51, .7)');
-  red_gradient.addColorStop(1, 'rgba(255, 51, 51, 0.3)');
-
   //weekChart
+
+  function getRandomColorFromArray() {
+      var colors = ['#BBE2E9', '#2C59A2', '#698BAA', '#D8423F', '#B5F299']
+      var color = colors[Math.floor(Math.random() * colors.length)];
+    return color;
+  }
 
   var week_chartData = {
     labels : ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
@@ -202,7 +193,7 @@
           label: "{{ streetCount[0] }}",
           fill: false,
           lineTension: .3,
-          backgroundColor: blue_gradient,
+          backgroundColor: getRandomColorFromArray(),
           borderColor: "rgba(75,192,192,0.4)",
           borderWidth: 0,
           borderCapStyle: 'butt',
@@ -241,11 +232,17 @@
             yAxes: [{
                 ticks: {
                     beginAtZero: true
+                },
+                gridLines: {
+                    display:true
                 }
             }],
             xAxes: [{
                 ticks: {
                     beginAtZero: true
+                },
+                gridLines: {
+                    display:false
                 }
             }]
         },
