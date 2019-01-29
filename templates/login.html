@@ -1,57 +1,46 @@
 <!DOCTYPE html>
-<html lang = "en-US">
-
+<html>
 <head>
-
-  	<meta charset = "UTF-8">
-  	<link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
-  	<!-- Bootstrap -->
-  	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  	<!-- Datatables -->
-  	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
-  	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
-  	<!-- Title -->
-  	<title>Connexion</title>
-  	<!-- Custom styles -->
-  	<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style/style.css') }}">
-
+    <title>Et la lumière fût</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="../static/js/toggle.js"></script>
+    <link rel="stylesheet" href="../static/style/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/style/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
 <body>
-
-		<nav class="navbar navbar-inverse navbar-fixed-top navbar-light bg-light" role="navigation">
-			<a class="navbar-brand">Que La Lumière Fût</a>
-			<div class="collapse navbar-collapse" id="navbarSupportedContent"></div>
-		</nav>
-
-		<div style="margin-top: 150px;">
-			<h1 style="text-align: center;">Connexion</h1>
-		</div>
-
-		<br>
-		<br>
-		<br>
-		<br>
-
-		<div style= "padding: 15px; border-radius: 10px; margin-top: 0px; text-align: center">
-      <form action="{{ url_for('signIn') }}" method="post" class="form" role="form">
-				<div class="form-group" style="text-align: center margin-top: 30px;">
-					<d1>
-						<input required class="form-control" placeholder="Identifiant" id="login" name="login" style="width: 500px; margin: auto;"/>
-					</d1>
-				</div>
-				<div class="form-group">
-					<d1>
-						<input required class="form-control" type="password" placeholder="Mot de passe" id="password" name="password" style="width: 500px; margin: auto;"/>
-					</d1>
-				</div>
-			<p><input id="save" type=submit value="Me Connecter" class="btn btn-info" style="margin-bottom: 10px; margin-top: 20px;"></p>
-      {% if error %}
-        <p style="color: red;">{{error}}</p>
-      {% endif %}
-			</form>
-		</div>
-
+    <section class="header text-center">
+        <img class="logo-width" src="static/images/logo.png" alt="logo et la lumière fut">
+    </section>
+    <section>
+        <div class="container">
+            <div class="row">
+                <div class="col-6 block-style">
+                    <h3 class="text-center h3-style padding_top_bot10">Bienvenue</h3>
+                    <form action="{{ url_for('map') }}" method="post" class="form" role="form">
+                      <div class="form-group" style="text-align: center; margin-top: 30px;">
+                        <d1>
+                          <input required class="form-control" placeholder="Identifiant" id="login" name="login" style="width: 500px; margin: auto;"/>
+                        </d1>
+                      </div>
+                      <div class="form-group">
+                        <d1>
+                          <input required class="form-control" type="password" placeholder="Mot de passe" id="password" name="password" style="width: 500px; margin: auto;"/>
+                        </d1>
+                    </div>
+                    <div class="text-center">
+                      <p><input id="save" type=submit value="Connexion" class="submit" style="margin-bottom: 10px; margin-top: 20px;"></p>
+                      {% if error %}
+                        <p style="color: red;">{{error}}</p>
+                      {% endif %}
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
 </body>
+
+</html>

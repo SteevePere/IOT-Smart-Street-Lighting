@@ -28,11 +28,18 @@
 <body>
 
 		<nav class="navbar navbar-inverse navbar-fixed-top navbar-light bg-light" role="navigation">
-			<a class="navbar-brand" href="/getEvents">Mon Parc</a>
-      <a class="navbar-brand" href="/admin">Alertes</a>
-      <a class="navbar-brand" href="/newDevice">Gérer mes équipements</a>
-      <a href="/signIn"><img src="/static/images/logout.png" title="Déconnexion" style="margin-left: 75%; margin-top: 5px; height: 40px; width: 40px;"></img></a>
-			<div class="collapse navbar-collapse" id="navbarSupportedContent"></div>
+      <ul class="nav navbar-nav">
+        <li><a href="/map">Mon Parc</a></li>
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#">Configuration
+          <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a class="navbar-brand" href="/admin">Alertes</a></li>
+            <li><a class="navbar-brand" href="/newDevice">Gérer mes équipements</a></li>
+          </ul>
+        </li>
+        <li><a href="/getEvents">Données</a></li>
+      </ul>
 		</nav>
 
 		<br>
@@ -40,144 +47,49 @@
 		<br>
 		<br>
 
-		<div>
-			<h1>Mon Parc</h1>
-		</div>
+    <div style="width: 65%; margin: auto; margin-top: 50px;">
+      <ul class="nav nav-tabs">
+        <li><a data-toggle="tab" href="#menu1">Time Series</a></li>
+        <li><a data-toggle="tab" href="#menu2">Focus Semaine</a></li>
+      </ul>
 
-
-    <div style= "background-color: white; padding: 0px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
-      <div id="map" style="height: 650px; border-radius: 10px;"></div>
-    </div>
-
-    <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
-      <div id="container" style="min-width: 310px; height: 600px; margin: 0 auto"></div>
-    </div>
-
-    <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
-      <h1 style="font-size: 25px; text-align: center;">Focus semaine du {{ week_monday_date }}</h1>
-      <form action="{{ url_for('getEvents') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
-        <div class="form-group">
-  				<d1>
-            <input type="week" required class="form-control" id="week" name="week" value="{{ week }}" style="width: 200px;">
-            <input type="hidden" name="action" value="per_week">
-  				</d1>
-  			</div>
-        <div class="form-group">
-  				<d1>
-            <input id="filter" type=submit value="Visualiser" class="btn btn-success">
-  				</d1>
-  			</div>
-  		</form>
-
-      <canvas id="weekChart" style="padding: 10px;"></canvas>
-
-    </div>
+        <div class="tab-content">
+          <div id="menu1" class="tab-pane fade">
+              <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+                <div id="container" style="min-width: 310px; height: 600px; margin: 0 auto"></div>
+              </div>
+            </div>
+          <div id="menu2" class="tab-pane fade in active">
+              <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+                <h1 style="font-size: 25px; text-align: center;">Focus semaine du {{ week_monday_date }}</h1>
+                <form action="{{ url_for('getEvents',  _anchor='menu2') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
+                  <div class="form-group">
+            				<d1>
+                      <input type="week" required class="form-control" id="week" name="week" value="{{ week }}" style="width: 200px;">
+                      <input type="hidden" name="action" value="per_week">
+            				</d1>
+            			</div>
+                  <div class="form-group">
+            				<d1>
+                      <input id="filter" type=submit value="Visualiser" class="btn btn-success">
+            				</d1>
+            			</div>
+            		</form>
+                <canvas id="weekChart" style="padding: 10px;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
 
 </body>
 
 <script>
 
-  //LEAFLET
+  // ChartJS //
 
-  var map = L.map('map').setView(
-    {% if OffDevices != [] %}
-        [{{OffDevices.latitude}},{{OffDevices.longitude}}], 18);
-    {% else %}
-      [48.8126508,2.3881197], 15);
-    {% endif %}
-  var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-  });
-
-  var redIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-
-      iconSize:     [25, 41],
-      shadowSize:   [41, 41],
-      iconAnchor:   [12, 41],
-      shadowAnchor: [4, 62],
-      popupAnchor:  [0, -50]
-  });
-
-  var orangeIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-
-      iconSize:     [25, 41],
-      shadowSize:   [41, 41],
-      iconAnchor:   [12, 41],
-      shadowAnchor: [4, 62],
-      popupAnchor:  [0, -50]
-  });
-
-  var greenIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-
-      iconSize:     [25, 41],
-      shadowSize:   [41, 41],
-      iconAnchor:   [12, 41],
-      shadowAnchor: [4, 62],
-      popupAnchor:  [0, -50]
-  });
-
-  {% for device in devices %}
-
-    {% if device.status == 0 %}
-      L.marker([{{device.latitude}},{{device.longitude}}], {icon: redIcon}).on('click', function() {
-        centerLeafletMapOnMarker(map, this);
-      }).addTo(map)
-      .bindPopup("<b> Device {{device.device}} </b>  </br> Défectueux </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}").openPopup();
-
-    {% elif device.status == 0.5 %}
-      L.marker([{{device.latitude}},{{device.longitude}}], {icon: orangeIcon}).on('click', function() {
-      centerLeafletMapOnMarker(map, this);
-    }).addTo(map)
-      .bindPopup("<b> Device {{device.device}} </b>  </br> À Surveiller </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
-
-    {% else %}
-      L.marker([{{device.latitude}},{{device.longitude}}], {icon: greenIcon}).on('click', function() {
-      centerLeafletMapOnMarker(map, this);
-    }).addTo(map)
-      .bindPopup("<b> Device {{device.device}} </b> </br> Fonctionnel </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
-
-    {% endif %}
-
-  {% endfor %}
-
-  var legend = L.control({position: 'bottomleft'});
-
-  legend.onAdd = function (map) {
-
-      var div = L.DomUtil.create('div', 'info legend'),
-          grades = ["Fonctionnel", "À Surveiller", "Défectueux"],
-          labels = ["https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png","https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png", "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png"];
-
-      // loop through our density intervals and generate a label with a colored square for each interval
-      for (var i = 0; i < grades.length; i++) {
-          div.innerHTML +=
-               (" <img src="+ labels[i] +" height='41' width='25' style='margin-bottom:5px; margin-right:5px'>") + grades[i] +'<br>';
-      }
-
-      return div;
-  };
-
-  legend.addTo(map);
-
-  function centerLeafletMapOnMarker(map, marker) {
-    var latLngs = [ marker.getLatLng() ];
-    var markerBounds = L.latLngBounds(latLngs);
-    map.fitBounds(markerBounds);
-  }
-
-  map.addLayer(layer);
-
-  //ChartJS
-
-  // get chart canvas
   var ctx = document.getElementById("weekChart").getContext("2d");
 
-  //weekChart
+  // weekChart
 
   function getRandomColorFromArray() {
       var colors = ['#BBE2E9', '#2C59A2', '#698BAA', '#D8423F', '#B5F299']
@@ -213,12 +125,11 @@
                     {{item}},
                   {% endfor %}],
           spanGaps: false
-      },
-    {% endfor %}
-  ]
-}
+        },
+      {% endfor %}
+    ]
+  }
 
-  // create the chart using the chart canvas
   var weekChart = new Chart(ctx, {
     type: 'bar',
     data: week_chartData,
@@ -250,7 +161,9 @@
       },
   });
 
-  //HighCharts, zoomable timeseries
+
+  // HighCharts, zoomable timeseries //
+
   $( document ).ready(function() {
 
       Highcharts.chart('container', {

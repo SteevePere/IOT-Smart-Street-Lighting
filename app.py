@@ -246,8 +246,15 @@ def create_device():
 
     return render_template('newDevice.html', streets=cleanStreets),200
 
+@app.route('/map', methods=['GET', 'POST'])
 
-#Get all events
+def map():
+
+    allDevices = getDevices()
+    OffDevices = IsOneOff()
+
+    return render_template('home.html', OffDevices=OffDevices, devices=allDevices),200
+
 @app.route('/getEvents', methods=['GET', 'POST'])
 
 def getEvents():
@@ -261,13 +268,11 @@ def getEvents():
     if (request.method == 'POST'):
         week = request.form['week']
 
-    allDevices = getDevices()
-    OffDevices = IsOneOff()
     timeSeriesData = highChartTimeSeries()
     weeklyData = chartJsWeekCount(week)[0]
     monday_date = chartJsWeekCount(week)[1]
 
-    return render_template('allEvents.html', OffDevices=OffDevices, week=week, streets=streets, devices=allDevices, week_monday_date=monday_date, perStreetWeeklyCount=weeklyData, timeSeriesData=timeSeriesData),200
+    return render_template('allEvents.html', _anchor='menu2', week=week, streets=streets, week_monday_date=monday_date, perStreetWeeklyCount=weeklyData, timeSeriesData=timeSeriesData),200
 
 #Post one event
 @app.route('/postEvent', methods=['POST'])
