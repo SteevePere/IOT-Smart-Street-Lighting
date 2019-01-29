@@ -2,6 +2,8 @@
 # -- IMPORTS --
 from __future__ import unicode_literals
 import hashlib
+import time
+import datetime
 from flask import Flask, request, jsonify, redirect, url_for, render_template
 from flaskext.mysql import MySQL
 from flask_influxdb import InfluxDB
@@ -73,10 +75,7 @@ def IsOneOff():
 
     return(NoOnesOff)
 
-def highChart():
-
-    import time
-    import datetime
+def highChartTimeSeries():
 
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
@@ -109,7 +108,37 @@ def highChart():
 
     return(data)
 
-# -- ROUTES --
+def chartJsWeekCount(week):
+
+    dbcon = influx_db.connection
+    dbcon.switch_database(database='pli')
+
+    streets = getStreets()
+    perStreetWeeklyCount = []
+
+    from_week_day = datetime.datetime.strptime(week + '-1', "%Y-W%W-%w") - datetime.timedelta(days=7)
+    monday_date = str(from_week_day.date())
+    week_start_timestamp = int(time.mktime(datetime.datetime.strptime(monday_date, "%Y-%m-%d").timetuple())) * 1000000000
+    week_end_timestamp = week_start_timestamp + 604800000000000
+
+    for street in streets:
+
+        weekly_events = dbcon.query("select count(lumens) from events where street = '{0}' and time >= {1} AND time <= {2} group by time(1d)".format(street, week_start_timestamp, week_end_timestamp))
+        weekly_event_points = list(weekly_events.get_points())
+        weekly_event_points = weekly_event_points[1:] #truncating list to account for influxdb's group by day (starts with previous day...)
+
+        counts = []
+
+        for event in weekly_event_points:
+            counts.append(event["count"])
+
+        perStreetWeeklyCount.append([street, counts])
+
+    monday_date = datetime.datetime.strptime(monday_date, '%Y-%m-%d').strftime('%d/%m/%Y')
+
+    return(perStreetWeeklyCount, monday_date)
+
+# -- ROUTES -- #
 
 #ALL USERS
 @app.route('/getUsers', methods=['GET'])
@@ -185,7 +214,8 @@ def create_device():
         long = request.form.get('long')
         street = request.form.get('street')
         status = 1
-        id = idIncrement() + 1
+        # id = idIncrement() + 1
+        id = 1
 
         json_body = [
             {
@@ -220,46 +250,13 @@ def getEvents():
     if (request.method == 'POST'):
         week = request.form['week']
 
-    Maurice_Grandcoing_week_counts = []
-    Toto_week_counts = []
-    Lenine_week_counts = []
-    days = []
-
-    import time
-    import datetime
-
-    from_week_day = datetime.datetime.strptime(week + '-1', "%Y-W%W-%w") - datetime.timedelta(days=7)
-    monday_date = str(from_week_day.date())
-    week_start_timestamp = int(time.mktime(datetime.datetime.strptime(monday_date, "%Y-%m-%d").timetuple())) * 1000000000
-    week_end_timestamp = week_start_timestamp + 604800000000000
-
-    for street in streets:
-
-        weekly_events = dbcon.query("select count(lumens) from events where street = '{0}' and time >= {1} AND time <= {2} group by time(1d)".format(street, week_start_timestamp, week_end_timestamp))
-        weekly_event_points = list(weekly_events.get_points())
-        weekly_event_points = weekly_event_points[1:] #truncating list to account for influxdb's group by day (starts with previous day...)
-
-        for event in weekly_event_points:
-            event_date = "Z".join(event["time"].split('Z')[0:1])
-            event_date = "T".join(event_date.split('T')[:1])
-            days.append(event_date)
-            if (street == 'Lenine'):
-                Lenine_week_counts.append(event["count"])
-            if (street == 'Toto'):
-                Toto_week_counts.append(event["count"])
-            if (street == 'Maurice_Grandcoing'):
-                Maurice_Grandcoing_week_counts.append(event["count"])
-
-    all_devices = getDevices()
+    allDevices = getDevices()
     OffDevices = IsOneOff()
+    timeSeriesData = highChartTimeSeries()
+    weeklyData = chartJsWeekCount(week)[0]
+    monday_date = chartJsWeekCount(week)[1]
 
-    monday_date = datetime.datetime.strptime(monday_date, '%Y-%m-%d').strftime('%d/%m/%Y')
-
-    data = highChart()
-
-    i = 0
-
-    return render_template('allEvents.html', OffDevices=OffDevices, week=week, devices=all_devices, week_monday_date=monday_date, Lenine_week_values=Lenine_week_counts, Toto_week_values=Toto_week_counts, MG_week_values=Maurice_Grandcoing_week_counts, days=days, data=data),200
+    return render_template('allEvents.html', OffDevices=OffDevices, week=week, streets=streets, devices=allDevices, week_monday_date=monday_date, perStreetWeeklyCount=weeklyData, timeSeriesData=timeSeriesData),200
 
 #Post one event
 @app.route('/postEvent', methods=['POST'])

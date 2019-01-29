@@ -30,9 +30,8 @@
 		</nav>
 
 		<div style="margin-top: 100px;">
-			<h1 style="text-align: center;">Ajouter un équipement</h1>
+			<h1>Ajouter un équipement</h1>
 		</div>
-
 
 		<br>
 
@@ -41,25 +40,30 @@
           <div class="form-group">
             <br>
     				<d1>
-              <select class="form-control" id="street" required name="street" style="width: 300px;">
+              <select class="form-control" id="street" required name="street" style="width: 49.5%; float: left;">
                   <option value="none" disabled selected>Choisir une Rue...</option>
-                  <option value="other">Autre...</option>
+                  <option value="other">Ajouter une Rue...</option>
                 {% for street in streets %}
                   <option value="{{ street }}">{{ street }}</option>
                 {% endfor %}
               </select>
-              <br>
-              <div id="streetAlert" class="alert alert-danger alert-dismissible" style='display:none;'>Veuillez choisir une rue !
-                <button data-dismiss="alert" type="button" class="close" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
+              <input required maxlength="25" class="form-control" placeholder="Nouvelle Rue..." id="streetInput" name="streetInput" style="display:none; width: 49.5%; float: right;"/>
     				</d1>
     			</div>
-        <div style= "background-color: white; padding: 0px; border-radius: 10px; border: 1px solid grey; margin-bottom: 20px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
-          <div id="map" style="height: 650px; border-radius: 10px;"></div>
+        <div style= "background-color: white; padding: 0px; border-radius: 10px; border: 1px solid grey; margin-bottom: 20px; margin-top: 50px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+          <div id="map" style="height: 500px; border-radius: 10px;"></div>
         </div>
         <div id="geolocAlert" class="alert alert-danger alert-dismissible" style='display:none;'>Veuillez géolocaliser l'équipement !
+          <button data-dismiss="alert" type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="streetAlert" class="alert alert-danger alert-dismissible" style='display:none;'>Veuillez choisir une rue !
+          <button data-dismiss="alert" type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="newStreetAlert" class="alert alert-danger alert-dismissible" style='display:none;'>Veuillez renseigner le nom de la nouvelle rue !
           <button data-dismiss="alert" type="button" class="close" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -73,12 +77,14 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
+
       {% if error %}
         <br>
         <p style="color: #ff3333;">{{error}}</p>
       {% endif %}
+
     </div>
-    </div>
+  </div>
 
 </body>
 
@@ -124,11 +130,21 @@
   $(document).ready( function() {
         $('#submit').click(function() {
             var street = $('#street').find(":selected").text();
+            var newStreet = $('#streetInput').val();
             if (street == "Choisir une Rue...") {
                 $("#streetAlert").fadeTo(1500, 500).slideUp(500, function(){
                 $("#streetAlert").slideUp(500);
               });
               return;
+            } else if (street == "Ajouter une Rue...") {
+              if (!newStreet) {
+                $("#newStreetAlert").fadeTo(1500, 500).slideUp(500, function(){
+                  $("#newStreetAlert").slideUp(500);
+                });
+                return;
+              } else {
+                street = newStreet
+              }
             }
             try {
               $.post(
@@ -147,6 +163,22 @@
                $("#geolocAlert").slideUp(500);
              });
            }
+        });
+        $('#street').change(function() {
+
+          var street = $('#street').find(":selected").text();
+          var streetInput = document.getElementById("streetInput");
+
+          if (street == "Ajouter une Rue...") {
+            if (streetInput.style.display === "none") {
+              streetInput.style.display = "block";
+            }
+          }
+          else {
+            if (streetInput.style.display === "block") {
+              streetInput.style.display = "none";
+            }
+          }
         });
   });
 

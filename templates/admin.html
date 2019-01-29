@@ -29,13 +29,10 @@
 		</nav>
 
 		<div style="margin-top: 150px;">
-			<h1 style="text-align: center;">Gérer mes alertes</h1>
+			<h1>Configurer mes alertes</h1>
 		</div>
 
-		<br>
-		<br>
-		<br>
-		<br>
+    <br>
 
     <div style= "background-color: white; padding: 2px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
   		<div style= "padding: 15px; border-radius: 10px; margin-top: 0px;">
@@ -52,7 +49,7 @@
                 <option {% if warning == 72 %} selected {% endif %} value="72">72 Heures</option>
                 <option {% if warning == 96 %} selected {% endif %} value="96">96 Heures</option>
               </select>
-              <small style="font-size: 11px; color: white;">Par défaut, 48 heures</small>
+              <small style="font-size: 11px;">Par défaut, 48 heures</small>
     				</d1>
     			</div>
           <div class="form-group">
@@ -67,7 +64,7 @@
                 <option {% if alert == 72 %} selected {% endif %} value="72">72 Heures</option>
                 <option {% if alert == 96 %} selected {% endif %} value="96">96 Heures</option>
               </select>
-              <small style="font-size: 11px; color: white;">Par défaut, 72 heures - doit être supérieur au seuil de déclenchement du monitoring</small>
+              <small style="font-size: 11px;">Par défaut, 72 heures - doit être supérieur au seuil de déclenchement du monitoring</small>
     				</d1>
     			</div>
   			<input id="save" type=submit value="Sauvegarder" class="btn btn-success" style="margin-bottom: 0; margin-top: 0px; margin-left: 0;">

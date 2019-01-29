@@ -9,9 +9,6 @@
   	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  	<!-- Datatables -->
-  	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
-  	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
   	<!-- Title -->
   	<title>Mon Parc d'Eclairage</title>
   	<!-- Custom styles -->
@@ -46,6 +43,7 @@
 		<div>
 			<h1>Mon Parc</h1>
 		</div>
+
 
     <div style= "background-color: white; padding: 0px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
       <div id="map" style="height: 650px; border-radius: 10px;"></div>
@@ -198,82 +196,36 @@
 
   var week_chartData = {
     labels : ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
-    datasets : [{
-        label: 'Rue Lénine',
-        fill: false,
-        lineTension: .3,
-        backgroundColor: blue_gradient,
-        borderColor: "rgba(75,192,192,0.4)",
-        borderWidth: 0,
-        borderCapStyle: 'butt',
-        borderDash: [],
-        borderDashOffset: 0.0,
-        borderJoinStyle: 'miter',
-        pointBorderColor: "rgba(75,192,192,1)",
-        pointBackgroundColor: "#fff",
-        pointBorderWidth: 1,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: "rgba(75,192,192,1)",
-        pointHoverBorderColor: "rgba(220,220,220,1)",
-        pointHoverBorderWidth: 2,
-        pointRadius: 1,
-        pointHitRadius: 10,
-        data : [{% for item in Lenine_week_values %}
-                  {{item}},
-                {% endfor %}],
-        spanGaps: false
-    },
-    {
-        label: 'Rue Maurice Grandcoing',
-        fill: false,
-        lineTension: .3,
-        backgroundColor: red_gradient,
-        borderColor: "#ff3333",
-        borderWidth: 0,
-        borderCapStyle: 'butt',
-        borderDash: [],
-        borderDashOffset: 0.0,
-        borderJoinStyle: 'miter',
-        pointBorderColor: "rgba(75,192,192,1)",
-        pointBackgroundColor: "#fff",
-        pointBorderWidth: 1,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: "rgba(75,192,192,1)",
-        pointHoverBorderColor: "rgba(220,220,220,1)",
-        pointHoverBorderWidth: 2,
-        pointRadius: 1,
-        pointHitRadius: 10,
-        data : [{% for item in MG_week_values %}
-                  {{item}},
-                {% endfor %}],
-        spanGaps: false
-    },
-    {
-        label: 'Rue Toto',
-        fill: false,
-        lineTension: .3,
-        backgroundColor: green_gradient,
-        borderColor: "#5cb85c",
-        borderWidth: 0,
-        borderCapStyle: 'butt',
-        borderDash: [],
-        borderDashOffset: 0.0,
-        borderJoinStyle: 'miter',
-        pointBorderColor: "rgba(75,192,192,1)",
-        pointBackgroundColor: "#fff",
-        pointBorderWidth: 1,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: "rgba(75,192,192,1)",
-        pointHoverBorderColor: "rgba(220,220,220,1)",
-        pointHoverBorderWidth: 2,
-        pointRadius: 1,
-        pointHitRadius: 10,
-        data : [{% for item in Toto_week_values %}
-                  {{item}},
-                {% endfor %}],
-        spanGaps: false
-    }]
-  }
+    datasets : [
+      {% for streetCount in perStreetWeeklyCount %}
+        {
+          label: "{{ streetCount[0] }}",
+          fill: false,
+          lineTension: .3,
+          backgroundColor: blue_gradient,
+          borderColor: "rgba(75,192,192,0.4)",
+          borderWidth: 0,
+          borderCapStyle: 'butt',
+          borderDash: [],
+          borderDashOffset: 0.0,
+          borderJoinStyle: 'miter',
+          pointBorderColor: "rgba(75,192,192,1)",
+          pointBackgroundColor: "#fff",
+          pointBorderWidth: 1,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: "rgba(75,192,192,1)",
+          pointHoverBorderColor: "rgba(220,220,220,1)",
+          pointHoverBorderWidth: 2,
+          pointRadius: 1,
+          pointHitRadius: 10,
+          data : [{% for item in streetCount[1] %}
+                    {{item}},
+                  {% endfor %}],
+          spanGaps: false
+      },
+    {% endfor %}
+  ]
+}
 
   // create the chart using the chart canvas
   var weekChart = new Chart(ctx, {
@@ -354,7 +306,7 @@
           },
 
           series: [
-          {% for set in data %}
+          {% for set in timeSeriesData %}
             {
                 type: 'spline',
                 name: '{{ set[0] }}',
