@@ -34,8 +34,8 @@
           <a class="dropdown-toggle" data-toggle="dropdown" href="#">Configuration
           <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a class="navbar-brand" href="/admin">Alertes</a></li>
             <li><a class="navbar-brand" href="/newDevice">Gérer mes équipements</a></li>
+            <li><a class="navbar-brand" href="/admin">Gérer mes alertes</a></li>
           </ul>
         </li>
         <li><a href="/getEvents">Données</a></li>
@@ -49,17 +49,17 @@
 
     <div style="width: 65%; margin: auto; margin-top: 50px;">
       <ul class="nav nav-tabs">
-        <li><a data-toggle="tab" href="#menu1">Time Series</a></li>
-        <li><a data-toggle="tab" href="#menu2">Focus Semaine</a></li>
+        <li {% if not post %} class="active" {% endif %}><a data-toggle="tab" href="#menu1">Time Series</a></li>
+        <li {% if post %} class="active" {% endif %}><a data-toggle="tab" href="#menu2">Focus Semaine</a></li>
       </ul>
 
         <div class="tab-content">
-          <div id="menu1" class="tab-pane fade">
+          <div id="menu1" class="tab-pane fade {% if not post %} in active {% endif %}">
               <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
-                <div id="container" style="min-width: 310px; height: 600px; margin: 0 auto"></div>
+                <div id="container" style="min-width: 310px; height: 700px; margin: 0 auto"></div>
               </div>
             </div>
-          <div id="menu2" class="tab-pane fade in active">
+          <div id="menu2" class="tab-pane fade {% if post %} in active {% endif %}">
               <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
                 <h1 style="font-size: 25px; text-align: center;">Focus semaine du {{ week_monday_date }}</h1>
                 <form action="{{ url_for('getEvents',  _anchor='menu2') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">

@@ -34,8 +34,8 @@
         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Configuration
         <span class="caret"></span></a>
         <ul class="dropdown-menu">
-          <li><a class="navbar-brand" href="/admin">Alertes</a></li>
           <li><a class="navbar-brand" href="/newDevice">Gérer mes équipements</a></li>
+          <li><a class="navbar-brand" href="/admin">Gérer mes alertes</a></li>
         </ul>
       </li>
       <li><a href="/getEvents">Données</a></li>
@@ -52,12 +52,13 @@
 
 //LEAFLET
 
-var map = L.map('map').setView(
+var map = L.map('map', { zoomControl:false }).setView(
   {% if OffDevices != [] %}
       [{{OffDevices.latitude}},{{OffDevices.longitude}}], 18);
   {% else %}
     [48.8126508,2.3881197], 15);
   {% endif %}
+
 var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
 });
 
@@ -129,7 +130,7 @@ legend.onAdd = function (map) {
     // loop through our density intervals and generate a label with a colored square for each interval
     for (var i = 0; i < grades.length; i++) {
         div.innerHTML +=
-             (" <img src="+ labels[i] +" height='41' width='25' style='margin-bottom:5px; margin-right:5px'>") + grades[i] +'<br>';
+             (" <img src="+ labels[i] +" height='41' width='25' style='margin-bottom:10px; margin-right:10px'>") + grades[i] +'<br>';
     }
 
     return div;

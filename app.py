@@ -90,7 +90,9 @@ def highChartTimeSeries():
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
 
-    start_time = 1546297200000000000 #01/01/2019
+    start_time = 1547856000000000000
+
+     #01/01/2019
 
     streets = getStreets()
 
@@ -196,13 +198,12 @@ def create_settings():
     alert_delay = settings[0]['alert_threshold']
 
     if (request.method == 'POST'):
-        warning_delay = request.form['warning']
-        alert_delay = request.form['alert']
+        warning_delay = request.form.get('warning')
+        alert_delay = request.form.get('alert')
         error = ''
 
         if (alert_delay > warning_delay):
             cursor.execute("UPDATE alerts SET warning_threshold = (%s), alert_threshold = (%s);", (warning_delay, alert_delay))
-            return redirect('/getEvents')
         else:
             error = "Le seuil de déclenchement d'alerte doit être supérieur au seuil de déclenchement du monitoring !"
             return render_template('admin.html', error=error),400
@@ -216,6 +217,7 @@ def create_device():
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
 
+    allDevices = getDevices()
     streets = getStreets()
     cleanStreets = cleanStreetNames(streets)
 
@@ -225,7 +227,7 @@ def create_device():
         long = request.form.get('long')
         street = request.form.get('street')
         street = street.replace(' ', '_')
-        status = 1
+        status = 0
         id = idIncrement() + 1
 
         json_body = [
@@ -244,7 +246,7 @@ def create_device():
         ]
         dbcon.write_points(json_body)
 
-    return render_template('newDevice.html', streets=cleanStreets),200
+    return render_template('newDevice.html', devices=allDevices, streets=cleanStreets),200
 
 @app.route('/map', methods=['GET', 'POST'])
 
@@ -264,15 +266,17 @@ def getEvents():
 
     streets = getStreets()
     week = '2019-W03'
+    post = False
 
     if (request.method == 'POST'):
         week = request.form['week']
+        post = True
 
     timeSeriesData = highChartTimeSeries()
     weeklyData = chartJsWeekCount(week)[0]
     monday_date = chartJsWeekCount(week)[1]
 
-    return render_template('allEvents.html', _anchor='menu2', week=week, streets=streets, week_monday_date=monday_date, perStreetWeeklyCount=weeklyData, timeSeriesData=timeSeriesData),200
+    return render_template('allEvents.html', post=post, week=week, streets=streets, week_monday_date=monday_date, perStreetWeeklyCount=weeklyData, timeSeriesData=timeSeriesData),200
 
 #Post one event
 @app.route('/postEvent', methods=['POST'])

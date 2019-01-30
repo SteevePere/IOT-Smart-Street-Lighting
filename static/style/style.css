@@ -52,6 +52,16 @@ h2 {
 	background-color: #223344;
 }
 
+.navbar-brand {
+	height: 30px !important;
+	color: black !important;
+	font-size: 14px;
+}
+
+.navbar-brand:hover {
+	color: grey !important;
+}
+
 .btn-info {
 	background-color: #2AB4DC;
 }
@@ -164,8 +174,18 @@ table.dataTable tbody tr:nth-of-type(odd) {
 
 .leaflet-left .leaflet-control {
     background: rgba(255,255,255,0.6) !important;
-    padding: 15px !important;
-		margin-left: 20px !important;
-		margin-bottom: 20px !important;
+    padding: 25px !important;
+		margin-left: 30px !important;
+		margin-bottom: 30px !important;
     border-radius: 10px !important;
+		box-shadow: 0 1px 5px rgba(0,0,0,0.5) !important;
+}
+
+.leaflet-top leaflet-left {
+	box-shadow: 0 1px 5px rgba(0,0,0,0) !important;
+}
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.0) !important;
+	margin-top: 30px !important;
 }
