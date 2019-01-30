@@ -59,7 +59,13 @@ def idIncrement():
 
     tabledata = dbcon.query('SELECT MAX(device) FROM devices')
     max_device = list(tabledata.get_points(measurement='devices'))
-    id = max_device[0]['max']
+
+    if (max_device != []):
+        id = max_device[0]['max']
+    else:
+        id = 0
+
+    id = id + 1
 
     return(id)
 
@@ -223,12 +229,12 @@ def create_device():
 
     if (request.method == 'POST'):
 
+        status = int(request.form.get('status'))
         lat = request.form.get('lat')
         long = request.form.get('long')
         street = request.form.get('street')
         street = street.replace(' ', '_')
-        status = 0
-        id = idIncrement() + 1
+        id = idIncrement()
 
         json_body = [
             {

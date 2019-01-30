@@ -44,8 +44,14 @@
       <br>
       <div style= "background-color: white; padding: 2px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
     		<div style= "padding: 15px; border-radius: 10px; margin-top: 0px;">
+            <br>
+              OFF
+              <label class="switch">
+                <input id="status" checked type="checkbox">
+                <span class="slider round"></span>
+              </label>
+              ON
             <div class="form-group">
-              <br>
       				<d1>
                 <select class="form-control" id="street" required name="street" style="width: 49.5%; float: left;">
                     <option value="none" disabled selected>Choisir une Rue...</option>
@@ -76,10 +82,10 @@
             </button>
           </div>
         <input id="submit" type=submit value="Sauvegarder" class="btn btn-success" style="margin-bottom: 0; margin-top: 0px; margin-left: 0;">
-        <input type=button onclick="window.location='/getEvents';" value="Retour" class="btn btn-warning" style="margin-bottom: 0; margin-top: 0px;">
+        <input type=button onclick="window.location='/map';" value="Retour" class="btn btn-warning" style="margin-bottom: 0; margin-top: 0px;">
         <br>
         <br>
-        <div id="successAlert" class="alert alert-success alert-dismissible" style='display:none;'>L'équipement a été créé avec succès !
+        <div id="successAlert" class="alert alert-success alert-dismissible" style='display:none;'>L'équipement a été ajouté avec succès !
           <button data-dismiss="alert" type="button" class="close" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -163,17 +169,20 @@
   map.addLayer(layer);
 
   $(document).ready( function() {
+
+        var status = 1
+
         $('#submit').click(function() {
             var street = $('#street').find(":selected").text();
             var newStreet = $('#streetInput').val();
             if (street == "Choisir une Rue...") {
-                $("#streetAlert").fadeTo(1500, 500).slideUp(500, function(){
+                $("#streetAlert").fadeTo(1000, 500).slideUp(500, function(){
                 $("#streetAlert").slideUp(500);
               });
               return;
             } else if (street == "Ajouter une Rue...") {
               if (!newStreet) {
-                $("#newStreetAlert").fadeTo(1500, 500).slideUp(500, function(){
+                $("#newStreetAlert").fadeTo(1000, 500).slideUp(500, function(){
                   $("#newStreetAlert").slideUp(500);
                 });
                 return;
@@ -184,17 +193,17 @@
             try {
               $.post(
                 "/newDevice",
-                { lat: lat, long: long, street: street }
+                { status: status, lat: lat, long: long, street: street }
              ).done(function (reply) {
                 $('#reply').empty().append(reply);
-                $("#successAlert").fadeTo(1500, 500).slideUp(500, function(){
+                $("#successAlert").fadeTo(500, 500).slideUp(500, function(){
                   $("#successAlert").slideUp(500);
                   location.reload()
                 });
              });
            }
            catch (err) {
-             $("#geolocAlert").fadeTo(1500, 500).slideUp(500, function(){
+             $("#geolocAlert").fadeTo(1000, 500).slideUp(500, function(){
                $("#geolocAlert").slideUp(500);
              });
            }
@@ -214,6 +223,17 @@
               streetInput.style.display = "none";
             }
           }
+        });
+
+        $('#status').change(function() {
+            if (status == 1) {
+              status = 0
+              console.log(status)
+            }
+            else {
+              status = 1
+              console.log(status)
+            }
         });
   });
 

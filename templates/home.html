@@ -101,7 +101,7 @@ var greenIcon = L.icon({
     L.marker([{{device.latitude}},{{device.longitude}}], {icon: redIcon}).on('click', function() {
       centerLeafletMapOnMarker(map, this);
     }).addTo(map)
-    .bindPopup("<b> Device {{device.device}} </b>  </br> Défectueux </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}").openPopup();
+    .bindPopup("<b> Device {{device.device}} </b>  </br> Défectueux </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}"){% if device == OffDevices %}.openPopup(){% endif %};
 
   {% elif device.status == 0.5 %}
     L.marker([{{device.latitude}},{{device.longitude}}], {icon: orangeIcon}).on('click', function() {
