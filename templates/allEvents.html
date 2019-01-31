@@ -29,6 +29,7 @@
 
 		<nav class="navbar navbar-inverse navbar-fixed-top navbar-light bg-light" role="navigation">
       <ul class="nav navbar-nav">
+        <li><img src="/static/images/logo.png" style="height: 50px;"></img></li>
         <li><a href="/map">Mon Parc</a></li>
         <li class="dropdown">
           <a class="dropdown-toggle" data-toggle="dropdown" href="#">Configuration
@@ -55,12 +56,12 @@
 
         <div class="tab-content">
           <div id="menu1" class="tab-pane fade {% if not post %} in active {% endif %}">
-              <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+              <div style= "background-color: white; padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
                 <div id="container" style="min-width: 310px; height: 700px; margin: 0 auto"></div>
               </div>
             </div>
           <div id="menu2" class="tab-pane fade {% if post %} in active {% endif %}">
-              <div style= "background-color: white; padding: 15px; border-radius: 10px; border: 1px solid grey; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+              <div style= "background-color: white; padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
                 <h1 style="font-size: 25px; text-align: center;">Focus semaine du {{ week_monday_date }}</h1>
                 <form action="{{ url_for('getEvents',  _anchor='menu2') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
                   <div class="form-group">
@@ -91,12 +92,6 @@
 
   // weekChart
 
-  function getRandomColorFromArray() {
-      var colors = ['#BBE2E9', '#2C59A2', '#698BAA', '#D8423F', '#B5F299']
-      var color = colors[Math.floor(Math.random() * colors.length)];
-    return color;
-  }
-
   var week_chartData = {
     labels : ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
     datasets : [
@@ -105,7 +100,7 @@
           label: "{{ streetCount[0] }}",
           fill: false,
           lineTension: .3,
-          backgroundColor: getRandomColorFromArray(),
+          backgroundColor: "{{ streetCount[2] }}",
           borderColor: "rgba(75,192,192,0.4)",
           borderWidth: 0,
           borderCapStyle: 'butt',

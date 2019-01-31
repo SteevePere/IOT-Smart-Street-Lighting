@@ -133,6 +133,8 @@ def chartJsWeekCount(week):
 
     streets = getStreets()
     perStreetWeeklyCount = []
+    i = 0
+    colors = ['#BBE2E9', '#B5F299']
 
     from_week_day = datetime.datetime.strptime(week + '-1', "%Y-W%W-%w") - datetime.timedelta(days=7)
     monday_date = str(from_week_day.date())
@@ -150,7 +152,10 @@ def chartJsWeekCount(week):
         for event in weekly_event_points:
             counts.append(event["count"])
 
-        perStreetWeeklyCount.append([street, counts])
+        color = colors[i]
+        i = i + 1
+
+        perStreetWeeklyCount.append([street, counts, color])
 
     monday_date = datetime.datetime.strptime(monday_date, '%Y-%m-%d').strftime('%d/%m/%Y')
 
@@ -282,7 +287,9 @@ def getEvents():
     weeklyData = chartJsWeekCount(week)[0]
     monday_date = chartJsWeekCount(week)[1]
 
-    return render_template('allEvents.html', post=post, week=week, streets=streets, week_monday_date=monday_date, perStreetWeeklyCount=weeklyData, timeSeriesData=timeSeriesData),200
+    i = 0;
+
+    return render_template('allEvents.html', i=i, post=post, week=week, streets=streets, week_monday_date=monday_date, perStreetWeeklyCount=weeklyData, timeSeriesData=timeSeriesData),200
 
 #Post one event
 @app.route('/postEvent', methods=['POST'])
