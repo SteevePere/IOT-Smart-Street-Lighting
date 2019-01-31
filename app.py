@@ -155,6 +155,9 @@ def chartJsWeekCount(week):
         color = colors[i]
         i = i + 1
 
+        if (i == 2):
+            i = 0
+
         perStreetWeeklyCount.append([street, counts, color])
 
     monday_date = datetime.datetime.strptime(monday_date, '%Y-%m-%d').strftime('%d/%m/%Y')

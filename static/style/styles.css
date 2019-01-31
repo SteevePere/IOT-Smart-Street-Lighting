@@ -4,10 +4,15 @@ html {
 }
 
 body {
-    margin: 0;
-    font-family: 'Open Sans', 'Helvetica Neue', sans-serif;
-    color: #666;
-    font-weight: lighter;
+  background: linear-gradient(0deg,rgba(255,255,255,0.5),rgba(255,255,255,0.7),rgba(255,255,255,0.9)), url(../images/earthNight2.jpg);
+	margin-top: 5%;
+	max-width: 100%;
+	margin: auto;
+	text-align: left;
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-attachment: fixed;
+	background-size: cover;
 }
 
 .center {
@@ -19,8 +24,12 @@ body {
 /* ----------------------------------*/
 
 .header {
-    background-color: #111b22;
-    margin-bottom: 150px;
+    background-color: #25a743;
+    margin-bottom: 200px;
+}
+
+.form-control:valid {
+  background-color:  white!important;
 }
 
 .logo-width {
@@ -39,14 +48,14 @@ body {
 .h2-style,
 .h3-style {
     font-weight: lighter;
-    color: white;
+    color: #111b22;
     margin-top: 20px;
 }
 
 .block-style {
     margin: 0 auto;
     border: solid 0px #bababa;
-    background-color: rgb(42, 63, 84);
+    background-color: rgba(17, 27, 34, 0.7):
     border-radius: 10px;
     box-shadow: 0 6px 8px 0 rgba(0, 0, 0, 0.4), 0 8px 20px 0 rgba(0, 0, 0, 0.25);
 }
@@ -54,7 +63,7 @@ body {
 .submit {
   color: #fff;
   padding-right: 15px;
-  background-color: rgb(42, 63, 84);
+  background-color: #25AA44;
   border-color: white;
   display: inline-block;
   font-weight: 400;
@@ -78,9 +87,21 @@ body {
 }
 
 @-webkit-keyframes whitePulse {
-  from { background-color: rgb(42, 63, 84); -webkit-box-shadow: 0 0 12px #fff; }
-  50% { background-color: rgb(42, 63, 84); -webkit-box-shadow: 0 0 12px rgb(42, 63, 84); }
-  to { background-color: rgb(42, 63, 84); -webkit-box-shadow: 0 0 12px #fff; }
+  from { background-color: #25AA44; -webkit-box-shadow: 0 0 12px #ccc; }
+  50% { background-color: #25AA44; -webkit-box-shadow: 0 0 12px rgb(42, 63, 84); }
+  to { background-color: #25AA44; -webkit-box-shadow: 0 0 12px #ccc; }
+}
+
+
+.form-control:focus {
+  border-color: #5cb85c;
+  box-shadow: none;
+  -webkit-box-shadow: none;
+}
+
+.has-error .form-control:focus {
+  box-shadow: none;
+  -webkit-box-shadow: none;
 }
 
   /* ------------------------------*/

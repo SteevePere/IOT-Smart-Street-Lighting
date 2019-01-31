@@ -13,6 +13,10 @@
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
     <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
     <script src='static/Chart.min.js'></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css">
+    <link rel="stylesheet" href= "{{ url_for('static',filename='leaflet.awesome-markers.css') }}">
+    <script src= "static/markers/leaflet.awesome-markers.js"></script>
   	<!-- Title -->
   	<title>Gérer mes équipements</title>
   	<!-- Custom styles -->
@@ -24,7 +28,7 @@
 
     <nav class="navbar navbar-inverse navbar-fixed-top navbar-light bg-light" role="navigation">
       <ul class="nav navbar-nav">
-        <li><img src="/static/images/logo.png" style="height: 50px;"></img></li>
+        <li><img src="/static/images/logo.png" style="margin-left: 10px; height: 50px;"></img></li>
         <li><a href="/map">Mon Parc</a></li>
         <li class="dropdown">
           <a class="dropdown-toggle" data-toggle="dropdown" href="#">Configuration
@@ -109,31 +113,21 @@
   var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
   });
 
-  var greyIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  L.AwesomeMarkers.Icon.prototype.options.prefix = 'fa';
 
-      iconSize:     [25, 41],
-      shadowSize:   [41, 41],
-      iconAnchor:   [12, 41],
-      shadowAnchor: [4, 62],
-      popupAnchor:  [0, -50]
-  });
+  var greenMarker = L.AwesomeMarkers.icon({
+      icon: 'lightbulb',
+      markerColor: 'green'
+    });
 
-  var greenIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-
-      iconSize:     [25, 41],
-      shadowSize:   [41, 41],
-      iconAnchor:   [12, 41],
-      shadowAnchor: [4, 62],
-      popupAnchor:  [0, -50]
-  });
+  var greyMarker = L.AwesomeMarkers.icon({
+      icon: 'lightbulb',
+      markerColor: 'cadetblue'
+    });
 
   {% for device in devices %}
 
-      L.marker([{{device.latitude}},{{device.longitude}}], {icon: greyIcon}).addTo(map)
+      L.marker([{{device.latitude}},{{device.longitude}}], {icon: greyMarker}).addTo(map)
 
   {% endfor %}
 
@@ -145,7 +139,7 @@
 
   function onMapClick(e) {
     if (i == 0) {
-      marker = new L.marker(e.latlng, {draggable:'true', icon: greenIcon});
+      marker = new L.marker(e.latlng, {draggable:'true', icon: greenMarker});
       var position = marker.getLatLng();
       console.log(position.lat, position.lng)
 

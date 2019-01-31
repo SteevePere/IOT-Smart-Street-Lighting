@@ -57,7 +57,8 @@ h2 {
 .navbar-inverse {
 	/* background: rgba(255,255,255,0.7); */
 	border-width: 0px;
-	background: linear-gradient(45deg, #000 5%, rgba(255,255,255,0.7) 40%);
+	background: #25a743;
+	/* background: linear-gradient(45deg, #111b22 5%, rgba(255,255,255,0.7) 35%); */
 }
 
 .navbar-inverse .navbar-nav>.open>a, .navbar-inverse .navbar-nav>.open>a:focus, .navbar-inverse .navbar-nav>.open>a:hover {
@@ -85,87 +86,12 @@ h2 {
 	border: 0px;
 }
 
-.table {
-  margin-bottom: 0px!important;
-}
-
-.bottom {
-	text-align: center;
-}
-
-.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
-	border-top: 0px solid red!important;
-}
-
-table.dataTable tbody tr {
-  background-color: transparent!important; }
-
-.dataTables_wrapper .dataTables_filter label {
-	font-color:white;
-}
-
-.dataTables_length {
-
-}
-
-table.dataTable thead .sorting, table.dataTable thead .sorting_asc, table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc_disabled, table.dataTable thead .sorting_desc_disabled {
-	background-position: 90% 100%;
-}
-
-table.dataTable tbody th, table.dataTable tbody td {
-	padding: 8px 0 8px 0;
-}
-
-
-.dataTables_length label {
-	font-weight: 500!important;
-}
-
-.dataTables_info {
-	font-style: italic;
-}
-
-table.dataTable thead th, table.dataTable thead td {
-	border-bottom: 0px!important;
-	padding: 10px 0 10px 0;
-}
-
-table.dataTable.no-footer {
-	border-bottom: 0px!important;
-}
-
-table.dataTable thead .sorting {
-	background-image: none!important;
-}
-
-.dataTables_wrapper .dataTables_paginate {
-	margin-top: 20px;
-	float:none;
-	display: block;
-	text-align: right;
-}
 
 .paginate_button {
 	background: white;
 	border:0px!important;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-	background: #2AB4DC!important;
-	color: white!important;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-	color: white!important;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-	background: #23272b;
-}
-
-table.dataTable tbody tr:nth-of-type(odd) {
-	background-color:#eff0f2!important;
-}
 
 .modal-footer {
 	border-top:0px solid #e5e5e5!important;
@@ -286,4 +212,8 @@ input:checked + .slider:before {
 
 .alert {
 	margin-top: 15px;
+}
+
+.highcharts-credits {
+	display: none;
 }

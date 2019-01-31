@@ -17,6 +17,10 @@
   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
   <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
   <script src='static/Chart.min.js'></script>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+  <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css">
+  <link rel="stylesheet" href= "{{ url_for('static',filename='leaflet.awesome-markers.css') }}">
+  <script src= "static/markers/leaflet.awesome-markers.js"></script>
   <!-- Hightchart (Zoomable Timeseries) -->
   <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
   <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -29,7 +33,7 @@
 
   <nav class="navbar navbar-inverse navbar-fixed-top navbar-light bg-light" role="navigation">
     <ul class="nav navbar-nav">
-      <li><img src="/static/images/logo.png" style="height: 50px;"></img></li>
+      <li><img src="/static/images/logo.png" style="margin-left: 10px; height: 50px;"></img></li>
       <li><a href="/map">Mon Parc</a></li>
       <li class="dropdown">
         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Configuration
@@ -63,55 +67,44 @@ var map = L.map('map', { zoomControl:false }).setView(
 var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
 });
 
-var redIcon = L.icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+L.AwesomeMarkers.Icon.prototype.options.prefix = 'fa';
 
-    iconSize:     [25, 41],
-    shadowSize:   [41, 41],
-    iconAnchor:   [12, 41],
-    shadowAnchor: [4, 62],
-    popupAnchor:  [0, -50]
-});
+var homeMarker = L.AwesomeMarkers.icon({
+    icon: 'home',
+    markerColor: 'blue',
+  });
 
-var orangeIcon = L.icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+var redMarker = L.AwesomeMarkers.icon({
+    icon: 'exclamation-circle',
+    markerColor: 'red',
+  });
 
-    iconSize:     [25, 41],
-    shadowSize:   [41, 41],
-    iconAnchor:   [12, 41],
-    shadowAnchor: [4, 62],
-    popupAnchor:  [0, -50]
-});
+var orangeMarker = L.AwesomeMarkers.icon({
+    icon: 'lightbulb',
+    markerColor: 'orange'
+  });
 
-var greenIcon = L.icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-
-    iconSize:     [25, 41],
-    shadowSize:   [41, 41],
-    iconAnchor:   [12, 41],
-    shadowAnchor: [4, 62],
-    popupAnchor:  [0, -50]
-});
+var greenMarker = L.AwesomeMarkers.icon({
+    icon: 'lightbulb',
+    markerColor: 'green'
+  });
 
 {% for device in devices %}
 
   {% if device.status == 0 %}
-    L.marker([{{device.latitude}},{{device.longitude}}], {icon: redIcon}).on('click', function() {
+    L.marker([{{device.latitude}},{{device.longitude}}], {icon: redMarker}).on('click', function() {
       centerLeafletMapOnMarker(map, this);
     }).addTo(map)
-    .bindPopup("<b> Device {{device.device}} </b>  </br> Défectueux </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}"){% if device == OffDevices %}.openPopup(){% endif %};
+    .bindPopup("<b> Device {{device.device}} </b>  </br> Défectueux </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
 
   {% elif device.status == 0.5 %}
-    L.marker([{{device.latitude}},{{device.longitude}}], {icon: orangeIcon}).on('click', function() {
+    L.marker([{{device.latitude}},{{device.longitude}}], {icon: orangeMarker}).on('click', function() {
     centerLeafletMapOnMarker(map, this);
   }).addTo(map)
     .bindPopup("<b> Device {{device.device}} </b>  </br> À Surveiller </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
 
   {% else %}
-    L.marker([{{device.latitude}},{{device.longitude}}], {icon: greenIcon}).on('click', function() {
+    L.marker([{{device.latitude}},{{device.longitude}}], {icon: greenMarker}).on('click', function() {
     centerLeafletMapOnMarker(map, this);
   }).addTo(map)
     .bindPopup("<b> Device {{device.device}} </b> </br> Fonctionnel </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
@@ -120,24 +113,10 @@ var greenIcon = L.icon({
 
 {% endfor %}
 
-var legend = L.control({position: 'bottomleft'});
+L.marker([48.8121706,2.3875415], {icon: homeMarker}).on('click', function() {
+  centerLeafletMapOnMarker(map, this);
+}).addTo(map)
 
-legend.onAdd = function (map) {
-
-    var div = L.DomUtil.create('div', 'info legend'),
-        grades = ["Fonctionnel", "À Surveiller", "Défectueux"],
-        labels = ["https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png","https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png", "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png"];
-
-    // loop through our density intervals and generate a label with a colored square for each interval
-    for (var i = 0; i < grades.length; i++) {
-        div.innerHTML +=
-             (" <img src="+ labels[i] +" height='41' width='25' style='margin-bottom:10px; margin-right:10px'>") + grades[i] +'<br>';
-    }
-
-    return div;
-};
-
-legend.addTo(map);
 
 function centerLeafletMapOnMarker(map, marker) {
   var latLngs = [ marker.getLatLng() ];
