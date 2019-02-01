@@ -86,6 +86,16 @@ h2 {
 	border: 0px;
 }
 
+.btn-success {
+	border-radius: 3px 0 0 3px !important;
+	width: 120px;
+}
+
+.btn-warning {
+	border-radius: 0 3px 3px 0 !important;
+	margin-left: -4px !important;
+	width: 120px;
+}
 
 .paginate_button {
 	background: white;
