@@ -34,13 +34,24 @@ def getStreets():
 
     streets = []
 
-    street_tags = dbcon.query("SHOW TAG VALUES from devices WITH key = street")
+    street_tags = dbcon.query("SELECT DISTINCT(street) from devices")
     tag_points = list(street_tags.get_points())
 
     for point in tag_points:
-        streets.append(point['value'])
+        streets.append(point['distinct'])
 
     return(streets)
+
+def getStreetFromDeviceId(device_id):
+
+    dbcon = influx_db.connection
+    dbcon.switch_database(database='pli')
+
+    street = dbcon.query("SELECT street from devices WHERE device = {0}".format(device_id))
+    street = list(street.get_points(measurement='devices'))
+    street = street[0]['street']
+
+    return(street)
 
 def cleanStreetNames(streets):
 
@@ -96,9 +107,7 @@ def highChartTimeSeries():
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
 
-    start_time = 1547856000000000000
-
-     #01/01/2019
+    start_time = 1547856000000000000 #01/01/2019
 
     streets = getStreets()
 
@@ -248,13 +257,13 @@ def create_device():
             {
                 "measurement": "devices",
                 "tags": {
-                    "street": street,
                     "latitude": lat,
                     "longitude": long
                 },
                 "fields": {
                     "status": status,
-                    "device": id
+                    "device": id,
+                    "street": street
                 }
             }
         ]
@@ -298,27 +307,40 @@ def getEvents():
 @app.route('/postEvent', methods=['POST'])
 
 def postEvent():
-    time = 1548979200
+
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
 
-    for i in range(144):
-        json_body = [
-            {
-                "measurement": "events",
-                "tags": {
-                    "device": "001",
-                    "street": "Maurice_Grandcoing"
-                },
-                "fields": {
-                    "lumens": 0.45
-                },
-                "time": time
-            }
-        ]
-        dbcon.write_points(json_body, time_precision='s')
-        time += 600
-    return jsonify({'code':201,'message': 'Created'}),201
+    content = request.json
+
+    device_id = content['hardware_serial']
+    street = getStreetFromDeviceId(device_id)
+    payload = content['payload_raw']
+    time = content['metadata']['time']
+
+    print(device_id)
+    print(street)
+    print(payload)
+    print(time)
+
+    #
+    #
+    #     json_body = [
+    #         {
+    #             "measurement": "events",
+    #             "tags": {
+    #                 "device": "001",
+    #                 "street": "Maurice_Grandcoing"
+    #             },
+    #             "fields": {
+    #                 "lumens": 0.45
+    #             },
+    #             "time": time
+    #         }
+    #     ]
+    #     dbcon.write_points(json_body, time_precision='s')
+    # return jsonify({'code':201,'message': 'Created'}),201
+    return ''
 
 #ERROR ROUTE
 @app.errorhandler(404)
