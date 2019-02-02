@@ -36,8 +36,8 @@
           <a class="dropdown-toggle" data-toggle="dropdown" href="#">Configuration
           <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a class="navbar-brand" href="/newDevice">Gérer mes équipements</a></li>
-            <li><a class="navbar-brand" href="/admin">Gérer mes alertes</a></li>
+            <li><a class="navbar-brand" href="/newDevice">Enregistrer mes capteurs</a></li>
+            <li><a class="navbar-brand" href="/admin">Configurer mes alertes</a></li>
           </ul>
         </li>
         <li><a href="/getEvents">Données</a></li>
@@ -64,7 +64,7 @@
             </div>
           <div id="menu2" class="tab-pane fade {% if post %} in active {% endif %}">
               <div style= "background-color: white; padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
-                <h1 style="color: #333333; font-size: 18px; fill: #333333; text-align: center; margin-top: 15px !important;">Focus semaine du {{ week_monday_date }}</h1>
+                <h1 style="color: #333333; font-size: 18px; fill: #333333; text-align: center; margin-top: 15px !important;">Focus Semaine Du {{ week_monday_date }}</h1>
                 <form action="{{ url_for('getEvents') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
                   <div class="form-group">
             				<d1>
@@ -171,7 +171,7 @@
           },
           colors: ['#CB2940', '#5cb85c', '#6699ff'],
           title: {
-              text: 'Mes Données par Rue'
+              text: 'Mes Données Par Rue'
           },
           subtitle: {
               text: document.ontouchstart === undefined ?

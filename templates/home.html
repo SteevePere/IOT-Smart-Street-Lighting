@@ -39,8 +39,8 @@
         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Configuration
         <span class="caret"></span></a>
         <ul class="dropdown-menu">
-          <li><a class="navbar-brand" href="/newDevice">Gérer mes équipements</a></li>
-          <li><a class="navbar-brand" href="/admin">Gérer mes alertes</a></li>
+          <li><a class="navbar-brand" href="/newDevice">Enregistrer mes capteurs</a></li>
+          <li><a class="navbar-brand" href="/admin">Configurer mes alertes</a></li>
         </ul>
       </li>
       <li><a href="/getEvents">Données</a></li>
@@ -51,7 +51,7 @@
   <div style= "background-color: white; padding: 0px; border-radius: 0px; margin-top: 50px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
     <div id="map" style="height: 957px; border-radius: 0px;"></div>
     <div class="leaflet-bottom leaflet-right">
-      <button class="btnStyle span3 leaflet-control" title="Ajouter un équipement" onclick="goToNewDevice()" style="background-color: transparent; border-width: 0;"><img class="addButton" src="/static/images/add.png" width="75px" height= "75px"></button>
+      <button class="btnStyle span3 leaflet-control" title="Ajouter un capteur" onclick="goToNewDevice()" style="background-color: transparent; border-width: 0;"><img class="addButton" src="/static/images/add.png" width="75px" height= "75px"></button>
     </div>
   </div>
 
@@ -103,19 +103,19 @@ var greenMarker = L.AwesomeMarkers.icon({
     L.marker([{{device.latitude}},{{device.longitude}}], {icon: redMarker}).on('click', function() {
       centerLeafletMapOnMarker(map, this);
     }).addTo(map)
-    .bindPopup("<b> Équipement {{device.device}} </b>  </br> Lampadaire défectueux </br> Dernière émission le {{ lastData[device.device][0] }} à {{ lastData[device.device][1] }} </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
+    .bindPopup("<b> Capteur {{device.device}} </b>  </br> <em class='em_red'> Lampadaire défectueux </em> </br> Dernier allumage le {{ lastData[device.device][0] }} à {{ lastData[device.device][1] }} </br> <hr> </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
 
   {% elif device.status == 0.5 %}
     L.marker([{{device.latitude}},{{device.longitude}}], {icon: orangeMarker}).on('click', function() {
     centerLeafletMapOnMarker(map, this);
   }).addTo(map)
-    .bindPopup("<b> Équipement {{device.device}} </b>  </br> Lampadaire à surveiller </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
+    .bindPopup("<b> Capteur {{device.device}} </b>  </br> <em class='em_orange'> Lampadaire à surveiller </em> </br> Dernier allumage le {{ lastData[device.device][0] }} à {{ lastData[device.device][1] }} <hr> </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
 
   {% else %}
     L.marker([{{device.latitude}},{{device.longitude}}], {icon: greenMarker}).on('click', function() {
     centerLeafletMapOnMarker(map, this);
   }).addTo(map)
-    .bindPopup("<b> Équipement {{device.device}} </b> </br> Lampadaire fonctionnel </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
+    .bindPopup("<b> Capteur {{device.device}} </b> </br> <em class='em_green'> Lampadaire fonctionnel </em> </br> <hr> </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
 
   {% endif %}
 

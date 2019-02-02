@@ -9,6 +9,7 @@ body {
 	background-position: center center;
 	background-attachment: fixed;
 	background-size: cover;
+  overflow: hidden;
 }
 
 @-webkit-keyframes whitePulse {
@@ -27,6 +28,28 @@ h2 {
  color: #383737;
  text-align: center;
  font-size: 150%;
+}
+
+hr {
+    margin-top: 15px;
+    margin-bottom: 0;
+    border: 0;
+    border-top: 1px solid #ccc;
+}
+
+.em_red {
+	font-style: normal;
+  color: red;
+}
+
+.em_orange {
+	font-style: normal;
+  color: orange;
+}
+
+.em_green {
+	font-style: normal;
+  color: #25a743;
 }
 
 .nav-tabs>li>a {
