@@ -116,13 +116,14 @@
 
   L.AwesomeMarkers.Icon.prototype.options.prefix = 'fa';
 
-  var greenMarker = L.AwesomeMarkers.icon({
+  var blueMarker = L.AwesomeMarkers.icon({
       icon: 'lightbulb',
-      markerColor: 'green'
+      markerColor: 'blue'
     });
 
   var greyMarker = L.AwesomeMarkers.icon({
       icon: 'lightbulb',
+      iconColor: '#ccc',
       markerColor: 'cadetblue'
     });
 
@@ -140,7 +141,7 @@
 
   function onMapClick(e) {
     if (i == 0) {
-      marker = new L.marker(e.latlng, {draggable:'true', icon: greenMarker});
+      marker = new L.marker(e.latlng, {draggable:'true', icon: blueMarker});
       var position = marker.getLatLng();
       console.log(position.lat, position.lng)
 
