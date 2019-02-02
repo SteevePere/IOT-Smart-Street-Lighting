@@ -41,7 +41,7 @@
           </ul>
         </li>
         <li><a href="/getEvents">Données</a></li>
-        <li><a href="/signIn" style="position:fixed; right: 2%;"><i style="font-size: 16px;" class="fas fa-sign-out-alt"></i></a></li>
+        <li><a href="/signIn" style="position:fixed; right: 1%;"><i style="font-size: 16px;" class="fas fa-sign-out-alt"></i></a></li>
       </ul>
 		</nav>
 
@@ -65,7 +65,7 @@
           <div id="menu2" class="tab-pane fade {% if post %} in active {% endif %}">
               <div style= "background-color: white; padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
                 <h1 style="color: #333333; font-size: 18px; fill: #333333; text-align: center; margin-top: 15px !important;">Focus semaine du {{ week_monday_date }}</h1>
-                <form action="{{ url_for('getEvents',  _anchor='menu2') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
+                <form action="{{ url_for('getEvents') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
                   <div class="form-group">
             				<d1>
                       <input type="week" required class="form-control" id="week" name="week" value="{{ week }}" style="width: 200px;">

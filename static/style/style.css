@@ -11,6 +11,12 @@ body {
 	background-size: cover;
 }
 
+@-webkit-keyframes whitePulse {
+  from { background-color: #25AA44; -webkit-box-shadow: 0 0 15px #ccc; }
+  50% { background-color: #25AA44; -webkit-box-shadow: 0 0 15px rgb(42, 63, 84); }
+  to { background-color: #25AA44; -webkit-box-shadow: 0 0 15px #ccc; }
+}
+
 h1 {
 	color: #333;
 	font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
@@ -55,10 +61,8 @@ h2 {
 }
 
 .navbar-inverse {
-	/* background: rgba(255,255,255,0.7); */
 	border-width: 0px;
 	background: #25a743;
-	/* background: linear-gradient(45deg, #111b22 5%, rgba(255,255,255,0.7) 35%); */
 }
 
 .navbar-inverse .navbar-nav>.open>a, .navbar-inverse .navbar-nav>.open>a:focus, .navbar-inverse .navbar-nav>.open>a:hover {
@@ -135,8 +139,32 @@ h2 {
 	box-shadow: 0 1px 5px rgba(0,0,0,0) !important;
 }
 
-.leaflet-right {
-	display: none !important;
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 70px !important;
+	margin-right: 70px !important;
+}
+
+.addButton {
+	opacity: 1;
+	border-radius: 40px;
+	-webkit-animation-name: whitePulse;
+	-webkit-animation-duration: 3s;
+	-webkit-animation-iteration-count: infinite;
+	cursor:pointer;
+}
+
+.addButton:hover {
+		opacity: 0.8;
+    transform: scale(1.1, 1.1);
+}
+
+.leaflet-bottom .leaflet-control:focus {
+		border-width: 0 !important;
+		border-color: transparent !important;
+}
+
+.leaflet-control-attribution a {
+	display: none;
 }
 
 .leaflet-bar {

@@ -44,17 +44,24 @@
         </ul>
       </li>
       <li><a href="/getEvents">Données</a></li>
-      <li><a href="/signIn" style="position:fixed; right: 2%;"><i style="font-size: 16px;" class="fas fa-sign-out-alt"></i></a></li>
+      <li><a href="/signIn" style="position:fixed; right: 1%;"><i style="font-size: 16px;" class="fas fa-sign-out-alt"></i></a></li>
     </ul>
   </nav>
 
   <div style= "background-color: white; padding: 0px; border-radius: 0px; margin-top: 50px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
     <div id="map" style="height: 957px; border-radius: 0px;"></div>
+    <div class="leaflet-bottom leaflet-right">
+      <button class="btnStyle span3 leaflet-control" title="Ajouter un équipement" onclick="goToNewDevice()" style="background-color: transparent; border-width: 0;"><img class="addButton" src="/static/images/add.png" width="75px" height= "75px"></button>
+    </div>
   </div>
 
 </body>
 
 <script>
+
+function goToNewDevice() {
+  window.location.href = "/newDevice";
+}
 
 //LEAFLET
 
@@ -96,19 +103,19 @@ var greenMarker = L.AwesomeMarkers.icon({
     L.marker([{{device.latitude}},{{device.longitude}}], {icon: redMarker}).on('click', function() {
       centerLeafletMapOnMarker(map, this);
     }).addTo(map)
-    .bindPopup("<b> Device {{device.device}} </b>  </br> Défectueux </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
+    .bindPopup("<b> Équipement {{device.device}} </b>  </br> Lampadaire défectueux </br> Dernière émission le {{ lastData[device.device][0] }} à {{ lastData[device.device][1] }} </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
 
   {% elif device.status == 0.5 %}
     L.marker([{{device.latitude}},{{device.longitude}}], {icon: orangeMarker}).on('click', function() {
     centerLeafletMapOnMarker(map, this);
   }).addTo(map)
-    .bindPopup("<b> Device {{device.device}} </b>  </br> À Surveiller </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
+    .bindPopup("<b> Équipement {{device.device}} </b>  </br> Lampadaire à surveiller </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
 
   {% else %}
     L.marker([{{device.latitude}},{{device.longitude}}], {icon: greenMarker}).on('click', function() {
     centerLeafletMapOnMarker(map, this);
   }).addTo(map)
-    .bindPopup("<b> Device {{device.device}} </b> </br> Fonctionnel </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
+    .bindPopup("<b> Équipement {{device.device}} </b> </br> Lampadaire fonctionnel </br> ---------------- </br> Rue {{device.street}} </br> {{device.latitude}}, {{device.longitude}}");
 
   {% endif %}
 

@@ -34,7 +34,7 @@ cursor = conn.cursor() #query builder
 # Get all streets
 def getStreets():
 
-    dbcon = influx_db.connection #connect to InfluxDB
+    dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
 
     streets = []
@@ -81,12 +81,12 @@ def idIncrement():
     tabledata = dbcon.query('SELECT MAX(device) FROM devices') #getting current max ID
     max_device = list(tabledata.get_points(measurement='devices'))
 
-    if (max_device != []): #if there is at least one device
-        id = max_device[0]['max'] #we retrieve the max ID
+    if (max_device != []): #if there is at least one device...
+        id = max_device[0]['max'] #...we retrieve the max ID...
     else:
-        id = 0 #else we set id at 0
+        id = 0 #...else, we set id at 0...
 
-    id = id + 1 #incrementing
+    id = id + 1 #...and we increment
 
     return(id)
 
@@ -100,29 +100,54 @@ def getLightReadingFromPayload(payload):
 
     return(float_light)
 
-# Retriving all devices as list
+# Retrieving all devices as list
 def getDevices():
 
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
 
     tabledata = dbcon.query('SELECT * FROM devices')
-    all_devices = list(tabledata.get_points(measurement='devices')) #we'll keep the lsit as is, so we can access attributes as needed
+    all_devices = list(tabledata.get_points(measurement='devices')) #we'll keep the list as is, so we can access attributes as needed
 
     return(all_devices)
 
 # Is at least one device off?
-def IsOneOff():
+def IsOneOff(all_devices):
 
-    all_devices = getDevices()
     NoOnesOff = []
 
     for device in all_devices:
 
-        if (device['status'] == 0): #if device is off,
-            return(device) #we stop the loop and return device
+        if (device['status'] == 0): #if device is off...
+            return(device) #...we stop the loop and return device
 
     return(NoOnesOff) #no device is off
+
+# When did a device last emit?
+def getDevicesLastData(all_devices):
+
+    dbcon = influx_db.connection
+    dbcon.switch_database(database='pli')
+
+    last_data = {}
+
+    for device in all_devices:
+
+        if (device['status'] == 0): #for now, only interested in devices that are off
+
+            device_id = '00' + str(device['device']) #influx stuff...
+            query = dbcon.query("SELECT last(lumens), time FROM events WHERE device = '{0}'".format(device_id))
+            event_point = list(query.get_points())
+            time = event_point[0]['time'] #we want the time
+            date = "T".join(time.split('T')[:1]) #slicing date out
+            date = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y') #making date pretty
+            time = "T".join(time.split('T')[1:]) #slicing time out
+            time = ".".join(time.split('.')[:1]) #making time pretty too
+            device_id = int(device_id) #converting back to int, to be used client side
+
+            last_data[device_id] = [date, time] #storing in dict so we may easily retrieve values from device id
+    print(last_data)
+    return (last_data)
 
 # Retrieving data for time series chart
 def highChartTimeSeries():
@@ -226,17 +251,24 @@ def home():
 @app.route('/signIn', methods=['GET', 'POST'])
 
 def signIn():
+
     if (request.method == 'POST'):
+
         user = []
         login = request.form['login']
         sha_1 = hashlib.sha1(request.form['password'])
         password = sha_1.hexdigest()
         isSignedIn = cursor.execute("SELECT * FROM users WHERE login = (%s) AND password = (%s)", (login, password))
+
         if (isSignedIn):
-            return redirect('/getEvents')
+
+            return redirect('/map')
+
         else:
+
             error = "Identifiant ou mot de passe incorrect !"
             return render_template('login.html', error=error),401
+
     return render_template('login.html'),200
 
 #SAVE USER WARNING/ALERT THRESHOLDS
@@ -317,9 +349,10 @@ def create_device():
 def map():
 
     allDevices = getDevices()
-    OffDevices = IsOneOff() #se we can display it/them red and center map on it/them
+    OffDevices = IsOneOff(allDevices) #so we can display it/them red and center map on it/them
+    lastData = getDevicesLastData(allDevices)
 
-    return render_template('home.html', OffDevices=OffDevices, devices=allDevices),200
+    return render_template('home.html', devices=allDevices, OffDevices=OffDevices, lastData=lastData),200
 
 #DATA PAGE
 @app.route('/getEvents', methods=['GET', 'POST'])
