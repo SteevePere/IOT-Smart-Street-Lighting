@@ -153,7 +153,9 @@ def highChartTimeSeries():
             event_array.append(event['count']) #we get the count for this 15-min span
             events_array.append(event_array) #we store this event's data into our main event array
 
+
         set.append(street) #final data is an array of arrays with street name...
+        set = cleanStreetNames(set) #passing array to name cleaner
         set.append(events_array) #...and corresponding events (count, timestamps)
         data.append(set)
 
@@ -193,6 +195,8 @@ def chartJsWeekCount(week):
         if (i == 2): #we only have two colors, so...
             i = 0 #...guess we'll have to loop again
 
+        street = cleanStreetNames([street]) #passing array to name cleaner
+        street = street[0] #getting value out
         perStreetWeeklyCount.append([street, counts, color]) #this is our final array
 
     monday_date = datetime.datetime.strptime(monday_date, '%Y-%m-%d').strftime('%d/%m/%Y') #now that we've used it, converting to user-friendly format

@@ -64,7 +64,7 @@
             </div>
           <div id="menu2" class="tab-pane fade {% if post %} in active {% endif %}">
               <div style= "background-color: white; padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
-                <h1 style="font-size: 25px; text-align: center;">Focus semaine du {{ week_monday_date }}</h1>
+                <h1 style="color: #333333; font-size: 18px; fill: #333333; text-align: center; margin-top: 15px !important;">Focus semaine du {{ week_monday_date }}</h1>
                 <form action="{{ url_for('getEvents',  _anchor='menu2') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
                   <div class="form-group">
             				<d1>
@@ -74,7 +74,7 @@
             			</div>
                   <div class="form-group">
             				<d1>
-                      <input id="filter" type=submit value="Visualiser" class="btn btn-success">
+                      <input id="filter" type=submit value="Visualiser" class="btn btn-success" style="border-radius: 3px !important;">
             				</d1>
             			</div>
             		</form>
@@ -99,7 +99,7 @@
     datasets : [
       {% for streetCount in perStreetWeeklyCount %}
         {
-          label: "{{ streetCount[0] }}",
+          label: "Rue {{ streetCount[0] }}",
           fill: false,
           lineTension: .3,
           backgroundColor: "{{ streetCount[2] }}",
@@ -133,7 +133,9 @@
     options: {
         legend: {
             labels: {
-                padding: 20
+                padding: 20,
+                fontColor: '#333333',
+                fontFamily: '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif'
             }
         },
         scales: {
@@ -185,7 +187,11 @@
               min: 0
           },
           legend: {
-              enabled: true
+              enabled: true,
+              verticalAlign: 'top',
+              itemStyle: {
+                fontWeight: 'normal'
+              }
           },
           plotOptions: {
               spline: {
@@ -216,7 +222,7 @@
           {% for set in timeSeriesData %}
             {
                 type: 'spline',
-                name: '{{ set[0] }}',
+                name: 'Rue {{ set[0] }}',
                 data: {{ set[1] }}
             },
           {% endfor %}
