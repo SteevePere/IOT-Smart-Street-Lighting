@@ -30,10 +30,22 @@ body {
 
 .logo-width {
     width: 25%;
+    -webkit-animation-name: fadeIn;
+    -webkit-animation-duration: 2s;
+    -webkit-animation-iteration-count: 1;
 }
 
 .logo-width-small {
     width: 200px;
+}
+
+@-webkit-keyframes fadeIn {
+  0% { opacity: 0; }
+  20% { opacity: 0.2; }
+  40% { opacity: 0.4; }
+  60% { opacity: 0.6; }
+  80% { opacity: 0.8; }
+  100% { opacity: 1; }
 }
 
 
@@ -90,9 +102,9 @@ body {
 }
 
 @-webkit-keyframes whitePulse {
-  from { background-color: rgba(37, 170, 68, 0.8); -webkit-box-shadow: 0 0 12px #ccc; }
+  from { background-color: rgba(37, 170, 68, 0.75); -webkit-box-shadow: 0 0 12px #ccc; }
   50% { background-color: #25AA44; -webkit-box-shadow: 0 0 12px rgb(42, 63, 84); }
-  to { background-color: rgba(37, 170, 68, 0.8); -webkit-box-shadow: 0 0 12px #ccc; }
+  to { background-color: rgba(37, 170, 68, 0.75); -webkit-box-shadow: 0 0 12px #ccc; }
 }
 
 
