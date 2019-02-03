@@ -135,7 +135,6 @@ hr {
 	border:0px!important;
 }
 
-
 .modal-footer {
 	border-top:0px solid #e5e5e5!important;
 }
@@ -170,7 +169,11 @@ hr {
 
 .leaflet-bottom .leaflet-control {
 	margin-bottom: 70px !important;
-	margin-right: 70px !important;
+	margin-right: 100px !important;
+}
+
+.leaflet-popup-content-wrapper {
+	background: rgba(255,255,255,.85) !important;
 }
 
 .addButton {
