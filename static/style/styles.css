@@ -55,8 +55,8 @@ body {
 .block-style {
     margin: 0 auto;
     border: solid 0px #bababa;
-    background-color: rgba(17, 27, 34, 0.7):
-    border-radius: 10px;
+    /* background-color: rgba(17, 27, 34, 0.1); */
+    border-radius: 3px;
     box-shadow: 0 6px 8px 0 rgba(0, 0, 0, 0.4), 0 8px 20px 0 rgba(0, 0, 0, 0.25);
 }
 
@@ -223,7 +223,7 @@ body {
 }
 
 .animate-toggle {
-    left: 11%;
+    left: 12%;
 
 }
 
