@@ -58,12 +58,12 @@
 
         <div class="tab-content">
           <div id="menu1" class="tab-pane fade {% if not post %} in active {% endif %}">
-              <div style= "background-color: white; padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+              <div style= "background-color: rgba(255, 255, 255, 0.75); padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
                 <div id="container" style="min-width: 310px; height: 700px; margin: 0 auto"></div>
               </div>
             </div>
           <div id="menu2" class="tab-pane fade {% if post %} in active {% endif %}">
-              <div style= "background-color: white; padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+              <div style= "background-color: rgba(255, 255, 255, 0.75); padding: 15px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
                 <h1 style="color: #333333; font-size: 18px; fill: #333333; text-align: center; margin-top: 15px !important;">Focus Semaine Du {{ week_monday_date }}</h1>
                 <form action="{{ url_for('getEvents') }}" method="post" class="form-inline" role="form" style="text-align: center; padding-top: 10px;">
                   <div class="form-group">
@@ -167,7 +167,8 @@
 
       Highcharts.chart('container', {
           chart: {
-              zoomType: 'x'
+              zoomType: 'x',
+              backgroundColor: 'transparent'
           },
           colors: ['#CB2940', '#5cb85c', '#6699ff'],
           title: {
