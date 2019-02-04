@@ -51,6 +51,7 @@
       <div style= "background-color: rgba(255,255,255,0.3); padding: 2px; border-radius: 10px; margin-top: 0px; margin-bottom: 30px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
     		<div style= "padding: 15px; border-radius: 10px; margin-top: 0px;">
             <br>
+            <input required maxlength="25" class="form-control" placeholder="Dev EUI du Capteur" id="euiInput" name="euiInput" style="width: 300px; float: left; margin-right: 30px;"/>
               OFF
               <label class="switch">
                 <input id="status" checked type="checkbox">
@@ -71,6 +72,11 @@
       			</div>
           <div style= "background-color: white; padding: 0px; border-radius: 10px; border: 1px solid grey; margin-bottom: 20px; margin-top: 50px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
             <div id="map" style="height: 500px; border-radius: 10px;"></div>
+          </div>
+          <div id="euiAlert" class="alert alert-danger alert-dismissible" style='display:none;'>Veuillez renseigner le Dev EUI du capteur !
+            <button data-dismiss="alert" type="button" class="close" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
           </div>
           <div id="geolocAlert" class="alert alert-danger alert-dismissible" style='display:none;'>Veuillez géolocaliser l'équipement !
             <button data-dismiss="alert" type="button" class="close" aria-label="Close">
@@ -167,8 +173,15 @@
         var status = 1
 
         $('#submit').click(function() {
+            var eui = $('#euiInput').val();
             var street = $('#street').find(":selected").text();
             var newStreet = $('#streetInput').val();
+            if (!eui) {
+              $("#euiAlert").fadeTo(1000, 500).slideUp(500, function(){
+                $("#euiAlert").slideUp(500);
+              });
+              return;
+            }
             if (street == "Choisir une Rue...") {
                 $("#streetAlert").fadeTo(1000, 500).slideUp(500, function(){
                 $("#streetAlert").slideUp(500);
@@ -187,7 +200,7 @@
             try {
               $.post(
                 "/newDevice",
-                { status: status, lat: lat, long: long, street: street }
+                { eui: eui, status: status, lat: lat, long: long, street: street }
              ).done(function (reply) {
                 $('#reply').empty().append(reply);
                 $("#successAlert").fadeTo(500, 500).slideUp(500, function(){

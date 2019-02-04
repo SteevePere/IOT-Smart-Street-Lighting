@@ -54,7 +54,7 @@ def getStreetFromDeviceId(device_id):
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
 
-    street = dbcon.query("SELECT street from devices WHERE device = {0}".format(device_id))
+    street = dbcon.query("SELECT street from devices WHERE device = '{0}'".format(device_id))
     street = list(street.get_points(measurement='devices'))
     street = street[0]['street'] #retrieving value from list
 
@@ -72,28 +72,10 @@ def cleanStreetNames(streets):
 
     return cleanStreets
 
-# Increment device ID
-def idIncrement():
-
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
-
-    tabledata = dbcon.query('SELECT MAX(device) FROM devices') #getting current max ID
-    max_device = list(tabledata.get_points(measurement='devices'))
-
-    if (max_device != []): #if there is at least one device...
-        id = max_device[0]['max'] #...we retrieve the max ID...
-    else:
-        id = 0 #...else, we set id at 0...
-
-    id = id + 1 #...and we increment
-
-    return(id)
-
 # Decoding base 64 payload into valid light reading
 def getLightReadingFromPayload(payload):
 
-    payload= base64.b64decode(payload) #decoding base 64
+    payload= base64.b64decode(payload).encode('hex') #decoding base 64, to hexadecimal
     hex_light = payload[-2:] #light reading is last two digits, slicing string
     dec_light = int(hex_light, 16) #light reading is in hexadecimal format, converting to decimal
     float_light = float(dec_light) #influxDB value is a float, casting
@@ -138,14 +120,20 @@ def getDevicesLastData(all_devices):
             device_id = '00' + str(device['device']) #influx stuff...
             query = dbcon.query("SELECT last(lumens), time FROM events WHERE device = '{0}'".format(device_id))
             event_point = list(query.get_points())
-            time = event_point[0]['time'] #we want the time
-            date = "T".join(time.split('T')[:1]) #slicing date out
-            date = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y') #making date pretty
-            time = "T".join(time.split('T')[1:]) #slicing time out
-            time = ".".join(time.split('.')[:1]) #making time pretty too
-            device_id = int(device_id) #converting back to int, to be used client side
 
-            last_data[device_id] = [date, time] #storing in dict so we may easily retrieve values from device id
+            if (event_point != []): #if device has already emitted
+                time = event_point[0]['time'] #we want the time
+                date = "T".join(time.split('T')[:1]) #slicing date out
+                date = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y') #making date pretty
+                time = "T".join(time.split('T')[1:]) #slicing time out
+                time = ".".join(time.split('.')[:1]) #making time pretty too
+                device_id = int(device_id) #converting back to int, to be used client side
+
+                last_data[device_id] = [date, time] #storing in dict so we may easily retrieve values from device id
+
+            else: #no data for this device
+                device_id = int(device_id) #converting back to int, to be used client side
+                last_data[device_id] = [0, 0] #storing in dict so we may easily retrieve values from device id
 
     return (last_data)
 
@@ -318,12 +306,12 @@ def create_device():
 
     if (request.method == 'POST'):
 
+        devEui = str(request.form.get('eui'))
         status = int(request.form.get('status'))
         lat = request.form.get('lat')
         long = request.form.get('long')
         street = request.form.get('street')
         street = street.replace(' ', '_') #making street name one word
-        id = idIncrement() #incrementing index
 
         json_body = [
             {
@@ -334,7 +322,7 @@ def create_device():
                 },
                 "fields": {
                     "status": status,
-                    "device": id,
+                    "device": devEui,
                     "street": street
                 }
             }
