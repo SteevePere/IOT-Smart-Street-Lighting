@@ -143,8 +143,7 @@ def highChartTimeSeries():
     dbcon = influx_db.connection
     dbcon.switch_database(database='pli')
 
-    start_time = 1547856000000000000 #01/01/2019 (arbitrary)
-
+    start_time = 1548975600000000000 #01/02/2019 (arbitrary)
     streets = getStreets()
 
     set = []
@@ -162,7 +161,8 @@ def highChartTimeSeries():
 
             event_array = []
             timestamp = int(time.mktime(datetime.datetime.strptime(event['time'], "%Y-%m-%dT%H:%M:%SZ").timetuple()) * 1000)
-            event_array.append(timestamp) #we store event timestamp into array (in nanoseconds)
+            timestamp = timestamp + 3600000 #GMT + 1
+	    event_array.append(timestamp) #we store event timestamp into array (in nanoseconds)
             event_array.append(event['count']) #we get the count for this 15-min span
             events_array.append(event_array) #we store this event's data into our main event array
 
@@ -195,7 +195,6 @@ def chartJsWeekCount(week):
 
         weekly_events = dbcon.query("select count(lumens) from events where street = '{0}' and time >= {1} AND time <= {2} group by time(1d)".format(street, week_start_timestamp, week_end_timestamp)) #counting events per week in given timespan
         weekly_event_points = list(weekly_events.get_points())
-        weekly_event_points = weekly_event_points[1:] #truncating list to account for influxdb's group by day (starts with previous day...)
 
         counts = []
 
@@ -351,7 +350,7 @@ def getEvents():
     dbcon.switch_database(database='pli')
 
     streets = getStreets()
-    week = '2019-W03' #default (so chart is not empty on GET page load)
+    week = '2019-W06' #default (so chart is not empty on GET page load)
     post = False
 
     if (request.method == 'POST'):
