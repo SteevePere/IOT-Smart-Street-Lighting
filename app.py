@@ -313,7 +313,7 @@ def create_device():
     if (request.method == 'POST'):
 
         devEui = str(request.form.get('eui'))
-        status = int(request.form.get('status'))
+        status = float(request.form.get('status'))
         lat = request.form.get('lat')
         long = request.form.get('long')
         street = request.form.get('street')
