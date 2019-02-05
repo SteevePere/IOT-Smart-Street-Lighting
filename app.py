@@ -76,9 +76,16 @@ def cleanStreetNames(streets):
 def getLightReadingFromPayload(payload):
 
     payload= base64.b64decode(payload).encode('hex') #decoding base 64, to hexadecimal
-    hex_light = payload[-2:] #light reading is last two digits, slicing string
-    dec_light = int(hex_light, 16) #light reading is in hexadecimal format, converting to decimal
-    float_light = float(dec_light) #influxDB value is a float, casting
+    frameType = payload[:2] #first byte of payload
+
+    if (frameType == '50'): #we only want light-related frames
+
+        hex_light = payload[-2:] #light reading is last two digits, slicing string
+        dec_light = int(hex_light, 16) #light reading is in hexadecimal format, converting to decimal
+        float_light = float(dec_light) #influxDB value is a float, casting
+
+    else:
+        return
 
     return(float_light)
 
@@ -368,36 +375,40 @@ def getEvents():
 
 def postEvent():
 
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
-
     content = request.json #getting request json body
-
-    device_id = content['hardware_serial']
-    street = getStreetFromDeviceId(device_id) #we want to store device street as event tag
 
     payload = content['payload_raw']
     float_light = getLightReadingFromPayload(payload) #extracting database-worthy light reading from payload
 
-    time = content['metadata']['time'] #time the TTN server received frame
+    if(float_light): #proceed only if this is a light reading
 
-    json_body = [
-        {
-            "measurement": "events",
-            "tags": {
-                "device": device_id,
-                "street": street
-            },
-            "fields": {
-                "lumens": float_light
-            },
-            "time": time
-        }
-    ]
+        device_id = content['hardware_serial']
+        street = getStreetFromDeviceId(device_id) #we want to store device street as event tag
 
-    dbcon.write_points(json_body) #and we insert
+        time = content['metadata']['time'] #time the TTN server received frame
 
-    return jsonify({'code':201,'message': 'Created'}),201
+        json_body = [
+            {
+                "measurement": "events",
+                "tags": {
+                    "device": device_id,
+                    "street": street
+                },
+                "fields": {
+                    "lumens": float_light
+                },
+                "time": time
+            }
+        ]
+
+        dbcon = influx_db.connection
+        dbcon.switch_database(database='pli')
+        dbcon.write_points(json_body) #and we insert
+
+        return jsonify({'code':201,'message': 'Created'}),201
+
+    else:
+        return jsonify({'code':400,'message': 'Bad Request'}),400
 
 #404 ROUTE
 @app.errorhandler(404)
