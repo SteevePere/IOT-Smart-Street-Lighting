@@ -124,7 +124,6 @@ def getDevicesLastData(all_devices):
 
         if (device['status'] == 0 or device['status'] == 0.5): #for now, only interested in devices that are off or in warning mode
 
-            device_id = '00' + str(device['device']) #influx stuff...
             query = dbcon.query("SELECT last(lumens), time FROM events WHERE device = '{0}'".format(device_id))
             event_point = list(query.get_points())
 
@@ -134,12 +133,10 @@ def getDevicesLastData(all_devices):
                 date = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y') #making date pretty
                 time = "T".join(time.split('T')[1:]) #slicing time out
                 time = ".".join(time.split('.')[:1]) #making time pretty too
-                device_id = int(device_id) #converting back to int, to be used client side
 
                 last_data[device_id] = [date, time] #storing in dict so we may easily retrieve values from device id
 
             else: #no data for this device
-                device_id = int(device_id) #converting back to int, to be used client side
                 last_data[device_id] = [0, 0] #storing in dict so we may easily retrieve values from device id
 
     return (last_data)
