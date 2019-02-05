@@ -89,6 +89,17 @@ def getLightReadingFromPayload(payload):
 
     return(float_light)
 
+#Retrieving device object from id
+def getDevice(device_id):
+
+    dbcon = influx_db.connection
+    dbcon.switch_database(database='pli')
+
+    device = dbcon.query("SELECT * from devices WHERE device = '{0}'".format(device_id), epoch='ns') #we want nanosecond precision, needed to overwrite
+    device = list(device.get_points(measurement='devices')) #we'll keep the list as is, so we can access attributes as needed
+
+    return(device)
+
 # Retrieving all devices as list
 def getDevices():
 
@@ -124,6 +135,7 @@ def getDevicesLastData(all_devices):
 
         if (device['status'] == 0 or device['status'] == 0.5): #for now, only interested in devices that are off or in warning mode
 
+            device_id = device['device']
             query = dbcon.query("SELECT last(lumens), time FROM events WHERE device = '{0}'".format(device_id))
             event_point = list(query.get_points())
 
@@ -140,6 +152,44 @@ def getDevicesLastData(all_devices):
                 last_data[device_id] = [0, 0] #storing in dict so we may easily retrieve values from device id
 
     return (last_data)
+
+#Checking current status, only called upon when new data received
+def updateDeviceStatus(deviceId):
+
+    device = getDevice(deviceId)
+
+    deviceStatus = device[0]['status']
+
+    if (deviceStatus == 0 or deviceStatus == 0.5): #device has sent data, we need to change its status
+
+        deviceLat = device[0]['latitude']
+        deviceLong = device[0]['longitude']
+        deviceStreet = device[0]['street']
+        time = device[0]['time']
+
+        deviceStatus = float(1) #back in business!
+
+        dbcon = influx_db.connection
+        dbcon.switch_database(database='pli')
+
+        json_body = [
+            {
+                "measurement": "devices",
+                "tags": {
+                    "latitude": deviceLat,
+                    "longitude": deviceLong
+                },
+                "fields": {
+                    "status": deviceStatus,
+                    "device": deviceId,
+                    "street": deviceStreet
+                },
+                "time": time
+            }
+        ]
+        dbcon.write_points(json_body) #and we update
+
+    return
 
 # Retrieving data for time series chart
 def highChartTimeSeries():
@@ -187,7 +237,7 @@ def chartJsWeekCount(week):
     streets = getStreets()
     perStreetWeeklyCount = [] #we want to return an array of arrays with street name, count for the week, and color in each array
     i = 0 #dataset counter
-    colors = ['#BBE2E9', '#B5F299'] #dataset colors
+    colors = ['#BBE2E9', '#B5F299', '#ff9e99', '#b1bcce', '#f2b3f0'] #dataset colors
 
     from_week_day = datetime.datetime.strptime(week + '-1', "%Y-W%W-%w") - datetime.timedelta(days=7) #getting first day of the selected week
     monday_date = str(from_week_day.date()) #converting to date
@@ -208,7 +258,7 @@ def chartJsWeekCount(week):
         color = colors[i] #getting dataset color
         i = i + 1
 
-        if (i == 2): #we only have two colors, so...
+        if (i == 5): #we only have five colors, so...
             i = 0 #...guess we'll have to loop again
 
         street = cleanStreetNames([street]) #passing array to name cleaner
@@ -377,9 +427,10 @@ def postEvent():
     payload = content['payload_raw']
     float_light = getLightReadingFromPayload(payload) #extracting database-worthy light reading from payload
 
-    if(float_light): #proceed only if this is a light reading
+    if (float_light): #proceed only if this is a light reading
 
         device_id = content['hardware_serial']
+        updateDeviceStatus(device_id) #if device had been flagged as malfunctioning, we'll update its status
         street = getStreetFromDeviceId(device_id) #we want to store device street as event tag
 
         time = content['metadata']['time'] #time the TTN server received frame
