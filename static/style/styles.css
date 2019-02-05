@@ -73,6 +73,11 @@ body {
   border: 0px solid #ced4da
 }
 
+.form-control:focus {
+	border-color: transparent !important;
+  box-shadow: 0px 1px 1px rgba(37, 167, 67, 0.2) inset, 0px 0px 8px rgba(37, 167, 67, 0.5) !important;
+}
+
 .submit {
   color: #fff;
   padding-right: 15px;
@@ -107,17 +112,6 @@ body {
   to { background-color: rgba(37, 170, 68, 0.75); -webkit-box-shadow: 0 0 12px #ccc; }
 }
 
-
-.form-control:focus {
-  border-color: #5cb85c;
-  box-shadow: none;
-  -webkit-box-shadow: none;
-}
-
-.has-error .form-control:focus {
-  box-shadow: none;
-  -webkit-box-shadow: none;
-}
 
   /* ------------------------------*/
  /* ------------ INDEX -----------*/
