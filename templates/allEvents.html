@@ -165,6 +165,20 @@
 
   $( document ).ready(function() {
 
+      Highcharts.setOptions({
+        lang: {
+            shortMonths: [
+                'Janvier', 'Février', 'Mars', 'Avril',
+                'Mai', 'Juin', 'Juillet', 'Août',
+                'Septembre', 'Octobre', 'Novembre', 'Décembre'
+            ],
+            weekdays: [
+                'Dimanche', 'Lundi', 'Mardi', 'Mercredi',
+                'Jeudi', 'Vendredi', 'Samedi'
+            ]
+        }
+      });
+
       Highcharts.chart('container', {
           chart: {
               zoomType: 'x',

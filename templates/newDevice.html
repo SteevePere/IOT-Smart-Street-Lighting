@@ -78,6 +78,11 @@
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
+          <div id="uniqueEuiAlert" class="alert alert-danger alert-dismissible" style='display:none;'>Ce Dev EUI existe déjà !
+            <button data-dismiss="alert" type="button" class="close" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
           <div id="geolocAlert" class="alert alert-danger alert-dismissible" style='display:none;'>Veuillez géolocaliser l'équipement !
             <button data-dismiss="alert" type="button" class="close" aria-label="Close">
               <span aria-hidden="true">&times;</span>
@@ -173,7 +178,7 @@
         var status = 1
 
         $('#submit').click(function() {
-            var eui = $('#euiInput').val();
+            var eui = $('#euiInput').val().replace(' ', '');
             var street = $('#street').find(":selected").text();
             var newStreet = $('#streetInput').val();
             if (!eui) {
@@ -194,18 +199,23 @@
                 });
                 return;
               } else {
-                street = newStreet
+                street = newStreet;
               }
             }
             try {
               $.post(
                 "/newDevice",
                 { eui: eui, status: status, lat: lat, long: long, street: street }
-             ).done(function (reply) {
-                $('#reply').empty().append(reply);
+             ).always(function (reply) {
+               if (reply.status == 400) {
+                 $("#uniqueEuiAlert").fadeTo(1000, 500).slideUp(500, function(){
+                   $("#uniqueEuiAlert").slideUp(500);
+                 });
+                 return;
+               }
                 $("#successAlert").fadeTo(500, 500).slideUp(500, function(){
                   $("#successAlert").slideUp(500);
-                  location.reload()
+                  location.reload();
                 });
              });
            }

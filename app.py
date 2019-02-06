@@ -123,6 +123,23 @@ def IsOneOff(all_devices):
 
     return(NoOnesOff) #no device is off
 
+# Checking Dev EUI unicity
+def isUnique(devEui):
+
+    dbcon = influx_db.connection
+    dbcon.switch_database(database='pli')
+
+    isUnique = False
+
+    tabledata = dbcon.query("SELECT * FROM devices WHERE device = '{0}'".format(devEui))
+    similar_devices = list(tabledata.get_points(measurement='devices'))
+
+    if (similar_devices == []): #no devices with same EUI have been found
+
+        isUnique = True
+
+    return(isUnique)
+
 # When did a device last emit?
 def getDevicesLastData(all_devices):
 
@@ -360,6 +377,11 @@ def create_device():
     if (request.method == 'POST'):
 
         devEui = str(request.form.get('eui'))
+        euiIsUnique = isUnique(devEui)
+
+        if not (euiIsUnique):
+            return jsonify({'code':400,'message': 'DEV EUI must be unique'}),400
+
         status = float(request.form.get('status'))
         lat = request.form.get('lat')
         long = request.form.get('long')
