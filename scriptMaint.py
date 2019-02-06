@@ -18,8 +18,6 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-
-
 # -- INIT APP --
 
 app = Flask(__name__)
@@ -42,54 +40,59 @@ password = 'root'
 dbname = 'pli'
 client = InfluxDBClient(host, port, user, password, dbname)
 
-
 # -- MYSQL OBJECTS --
 
 conn = mysql.connect()
 cursor = conn.cursor()
 
+def getAdminsMailAddress():
+
+    cursor.execute("SELECT email FROM users WHERE role = 'admin'")
+    result = cursor.fetchall()
+    email = result[0][0]
+
+    return email
+
 # Get paramettre
 def getAlert():
 
-        settings = []
-        cursor.execute("SELECT * FROM alerts") #getting current values
-        rows = cursor.fetchall()
-        columns = [desc[0] for desc in cursor.description]
-        for row in rows:
-                row = dict(zip(columns,row))
-                settings.append(row)
+    settings = []
+    cursor.execute("SELECT * FROM alerts") #getting current values
+    rows = cursor.fetchall()
+    columns = [desc[0] for desc in cursor.description]
+
+    for row in rows:
+
+        row = dict(zip(columns,row))
+        settings.append(row)
         warning_delay = settings[0]['warning_threshold'] #current value, to display on page load
         alert_delay = settings[0]['alert_threshold'] #current value, to display on page load
         dataSeting = {
                 'warning_delay' : warning_delay,
                 'alert_delay' : alert_delay
         }
-        return dataSeting
+
+    return dataSeting
 
 getSeting = getAlert()
-
-print(getSeting['warning_delay'])
-print(getSeting['alert_delay'])
 
 # -- Valuel Alert
 _valueWarnig = getSeting['warning_delay']
 _valueAlert = getSeting['alert_delay']
 
-
 query = 'select "device","status" from devices where time < now()'
 queryEvent = 'select * from events;'
 arrayResult = []
 
-
 ##############################################EMAIL########################################
 
-mailInput = 'xyz97600@gmail.com'
+mailInput = getAdminsMailAddress()
 mailOutput = 'keavinwilson@gmail.com'
 msg = MIMEMultipart()
 msg['From'] = mailInput
 msg['To'] = mailOutput
 
-msg['Subject'] = 'Alert Lampadaire' 
+msg['Subject'] = 'Alert Lampadaire'
 mailserver = smtplib.SMTP('smtp.gmail.com', 587)
 mailserver.ehlo()
 mailserver.starttls()
@@ -97,7 +100,6 @@ mailserver.ehlo()
 mailserver.login(mailInput, 'PLI_2018')
 
 ##########################################################################################
-
 
 #result = client.query(query)
 resultsEvent = client.query(queryEvent)
