@@ -144,90 +144,100 @@ arratGetTime = []
 arrayGetDevice = []
 deviceDanger = []
 deviceEteint = []
+
 for i in ArrayFormat:
-	a = datetime.strptime(i, "%Y/%m/%d %H:%M:%S").strftime("%A, %d. %B %Y %I:%M:%S%p")
-	b = pd.to_datetime(a) + pd.DateOffset(hours=_valueWarnig)
-	c = pd.to_datetime(a) + pd.DateOffset(hours=_valueAlert)
-	if (datetime.now() >= b and datetime.now() < c):
-		arratGetTime.append(ArrayFormat.index(i))
-		device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
-		device = device.replace("'","")
-		device1 = client.query(("select * from devices where device='%s'")%(str(device)),epoch='ns')
-		timeStamp = device1.raw['series'][0]['values'][0][0]
-		lat = device1.raw['series'][0]['values'][0][2]
-		long = device1.raw['series'][0]['values'][0][3]
-		street = device1.raw['series'][0]['values'][0][5]
-		json_body = [ {
-	            "measurement": "devices",
-	            "tags": {
-	                "latitude": lat,
-	                "longitude": long,
-		    },
-		    "fields": {
-	                "status": float("0.5"),
-	                "street": street,
-	                "device": device,
-	            },
-		    "time": timeStamp,
-	        }]
-		try:
-			client.write_points(json_body)
-		except Exception as e:
-			print(str(e))
-		deviceDanger.append(device)
-        elif (datetime.now() >= c):
-		arratGetTime.append(ArrayFormat.index(i))
-                device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
-                device = device.replace("'","")
-                device1 = client.query(("select * from devices where device='%s'")%(str(device)),epoch='ns')
-                timeStamp = device1.raw['series'][0]['values'][0][0]
-                lat = device1.raw['series'][0]['values'][0][2]
-                long = device1.raw['series'][0]['values'][0][3]
-                street = device1.raw['series'][0]['values'][0][5]
-                json_body = [ {
-                    "measurement": "devices",
-                    "tags": {
-                        "latitude": lat,
-                        "longitude": long,
-                    },
-                    "fields": {
-                        "street": street,
-                        "device": device,
-                        "status": float(0)
-                    },
-                    "time": timeStamp,
-                }]
-                try:
-                        client.write_points(json_body)
-                except Exception as e:
-                        print(str(e))
-		deviceEteint.append(device)
-        else:
-		arratGetTime.append(ArrayFormat.index(i))
-                device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
-                device = device.replace("'","")
-                device1 = client.query(("select * from devices where device='%s'")%(str(device)),epoch='ns')
-                timeStamp = device1.raw['series'][0]['values'][0][0]
-                lat = device1.raw['series'][0]['values'][0][2]
-                long = device1.raw['series'][0]['values'][0][3]
-                street = device1.raw['series'][0]['values'][0][5]
-                json_body = [ {
-                    "measurement": "devices",
-                    "tags": {
-                        "latitude": lat,
-                        "longitude": long,
-                    },
-                    "fields": {
-                        "status": float(1),
-                        "street": street,
-                        "device": device,
-                    },
-                    "time": timeStamp,
-                }]
-                try:
-                        client.write_points(json_body)
-                except Exception as e:
-                        print(str(e))
+
+    a = datetime.strptime(i, "%Y/%m/%d %H:%M:%S").strftime("%A, %d. %B %Y %I:%M:%S%p")
+    b = pd.to_datetime(a) + pd.DateOffset(hours=_valueWarnig)
+    c = pd.to_datetime(a) + pd.DateOffset(hours=_valueAlert)
+
+    if (datetime.now() >= b and datetime.now() < c):
+
+        arratGetTime.append(ArrayFormat.index(i))
+        device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
+        device = device.replace("'","")
+        device1 = client.query(("select * from devices where device='%s'")%(str(device)),epoch='ns')
+        timeStamp = device1.raw['series'][0]['values'][0][0]
+        lat = device1.raw['series'][0]['values'][0][2]
+        long = device1.raw['series'][0]['values'][0][3]
+        street = device1.raw['series'][0]['values'][0][5]
+        json_body = [ {
+                "measurement": "devices",
+                "tags": {
+                    "latitude": lat,
+                    "longitude": long,
+            },
+            "fields": {
+                    "status": float("0.5"),
+                    "street": street,
+                    "device": device,
+                },
+            "time": timeStamp,
+            }]
+
+        try:
+        	client.write_points(json_body)
+
+        except Exception as e:
+        	print(str(e))
+
+        deviceDanger.append(device)
+
+    elif (datetime.now() >= c):
+
+        arratGetTime.append(ArrayFormat.index(i))
+        device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
+        device = device.replace("'","")
+        device1 = client.query(("select * from devices where device='%s'")%(str(device)),epoch='ns')
+        timeStamp = device1.raw['series'][0]['values'][0][0]
+        lat = device1.raw['series'][0]['values'][0][2]
+        long = device1.raw['series'][0]['values'][0][3]
+        street = device1.raw['series'][0]['values'][0][5]
+        json_body = [ {
+            "measurement": "devices",
+            "tags": {
+                "latitude": lat,
+                "longitude": long,
+            },
+            "fields": {
+                "street": street,
+                "device": device,
+                "status": float(0)
+            },
+            "time": timeStamp,
+        }]
+
+        try:
+                client.write_points(json_body)
+        except Exception as e:
+                print(str(e))
+        deviceEteint.append(device)
+        # else:
+    	# arratGetTime.append(ArrayFormat.index(i))
+        #         device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
+        #         device = device.replace("'","")
+        #         device1 = client.query(("select * from devices where device='%s'")%(str(device)),epoch='ns')
+        #         timeStamp = device1.raw['series'][0]['values'][0][0]
+        #         lat = device1.raw['series'][0]['values'][0][2]
+        #         long = device1.raw['series'][0]['values'][0][3]
+        #         street = device1.raw['series'][0]['values'][0][5]
+        #         json_body = [ {
+        #             "measurement": "devices",
+        #             "tags": {
+        #                 "latitude": lat,
+        #                 "longitude": long,
+        #             },
+        #             "fields": {
+        #                 "status": float(1),
+        #                 "street": street,
+        #                 "device": device,
+        #             },
+        #             "time": timeStamp,
+        #         }]
+        #         try:
+        #                 client.write_points(json_body)
+        #         except Exception as e:
+        #                 print(str(e))
 print(deviceDanger)
 print(deviceEteint)
 str1 = ','.join(deviceDanger)
