@@ -86,8 +86,8 @@ arrayResult = []
 
 ##############################################EMAIL########################################
 
-mailInput = getAdminsMailAddress()
-mailOutput = 'keavinwilson@gmail.com'
+mailInput = 'xyz97600@gmail.com'
+mailOutput = getAdminsMailAddress()
 msg = MIMEMultipart()
 msg['From'] = mailInput
 msg['To'] = mailOutput
