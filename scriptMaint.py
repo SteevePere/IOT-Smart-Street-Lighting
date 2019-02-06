@@ -50,13 +50,6 @@ cursor = conn.cursor()
 
 # Get paramettre
 def getAlert():
-#+-------------------+---------+------+-----+---------+-------+
-#| Field             | Type    | Null | Key | Default | Extra |
-#+-------------------+---------+------+-----+---------+-------+
-#| warning_threshold | int(11) | NO   |     | 48      |       |
-#| alert_threshold   | int(11) | NO   |     | 72      |       |
-#+-------------------+---------+------+-----+---------+-------+
-#2 rows in set (0.00 sec)
 
         settings = []
         cursor.execute("SELECT * FROM alerts") #getting current values
@@ -76,9 +69,7 @@ def getAlert():
 getSeting = getAlert()
 
 print(getSeting['warning_delay'])
-
-
-
+print(getSeting['alert_delay'])
 
 # -- Valuel Alert
 _valueWarnig = getSeting['warning_delay']
@@ -92,51 +83,43 @@ arrayResult = []
 
 ##############################################EMAIL########################################
 
-#mailInput = 'xyz97600@gmail.com'
-#mailOutput = 'keavinwilson@gmail.com'
-#msg = MIMEMultipart()
-#msg['From'] = mailInput
-#msg['To'] = mailOutput
+mailInput = 'xyz97600@gmail.com'
+mailOutput = 'keavinwilson@gmail.com'
+msg = MIMEMultipart()
+msg['From'] = mailInput
+msg['To'] = mailOutput
 
-#msg['Subject'] = 'Alert Lampadaire' 
-#mailserver = smtplib.SMTP('smtp.gmail.com', 587)
-#mailserver.ehlo()
-#mailserver.starttls()
-#mailserver.ehlo()
-#mailserver.login(mailInput, '@@@@@@@@@')
+msg['Subject'] = 'Alert Lampadaire' 
+mailserver = smtplib.SMTP('smtp.gmail.com', 587)
+mailserver.ehlo()
+mailserver.starttls()
+mailserver.ehlo()
+mailserver.login(mailInput, 'PLI_2018')
 
 ##########################################################################################
 
 
 #result = client.query(query)
 resultsEvent = client.query(queryEvent)
-#print(result)
-#print(resultsEvent)
 ## getAll result
 points = resultsEvent.get_points()
 for item in points:
 	arrayResult.append(item)
 
-print(arrayResult)
-
 ## str to result
 getResultInArray = ''.join(str(e) for e in arrayResult)
 getResultInArray = getResultInArray.replace('}',']').replace('{','').replace('u\'','').replace('\'','')
 getResultInArray = getResultInArray.split(']')[:-1]
-#print(getResultInArray)
 
 ##Iteration on Array to get only time
 arrayTime = []
 for item in getResultInArray:
 	arrayTime.append(item.split(None,8)[7])
-#	print(item.split(None,8)[7])
 ##Change format dateTime
 
-#print(arrayTime)
 ArrayFormat = []
 for i in arrayTime:
 	ArrayFormat.append(i.replace('T',' ').replace('.',' ').replace('-','/').rsplit(' ', 1)[0])
-print(ArrayFormat)
 
 def create_json_body_for_value(time,device,lat,long,street):
     return json.dumps([
@@ -161,8 +144,8 @@ deviceDanger = []
 deviceEteint = []
 for i in ArrayFormat:
 	a = datetime.strptime(i, "%Y/%m/%d %H:%M:%S").strftime("%A, %d. %B %Y %I:%M:%S%p")
-	b = pd.to_datetime(a) + pd.DateOffset(days=_valueWarnig)
-	c = pd.to_datetime(a) + pd.DateOffset(days=_valueAlert)
+	b = pd.to_datetime(a) + pd.DateOffset(hours=_valueWarnig)
+	c = pd.to_datetime(a) + pd.DateOffset(hours=_valueAlert)
 	if (datetime.now() >= b and datetime.now() < c):
 		arratGetTime.append(ArrayFormat.index(i))
 		device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
@@ -175,24 +158,21 @@ for i in ArrayFormat:
 		json_body = [ {
 	            "measurement": "devices",
 	            "tags": {
-	                "street": street,
 	                "latitude": lat,
 	                "longitude": long,
-	                "device": device,
 		    },
 		    "fields": {
-	                "status": 0.5
+	                "status": float("0.5"),
+	                "street": street,
+	                "device": device,
 	            },
 		    "time": timeStamp,
 	        }]
 		try:
 			client.write_points(json_body)
-#			mailserver.sendmail(mailInput, mailOutput, msg.as_string())
-#			mailserver.quit()
 		except Exception as e:
 			print(str(e))
 		deviceDanger.append(device)
-                print("device danger"+device)
         elif (datetime.now() >= c):
 		arratGetTime.append(ArrayFormat.index(i))
                 device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
@@ -205,12 +185,12 @@ for i in ArrayFormat:
                 json_body = [ {
                     "measurement": "devices",
                     "tags": {
-                        "street": street,
                         "latitude": lat,
                         "longitude": long,
-                        "device": device,
                     },
                     "fields": {
+                        "street": street,
+                        "device": device,
                         "status": float(0)
                     },
                     "time": timeStamp,
@@ -219,29 +199,26 @@ for i in ArrayFormat:
                         client.write_points(json_body)
                 except Exception as e:
                         print(str(e))
-                print("device down"+device)
 		deviceEteint.append(device)
         else:
 		arratGetTime.append(ArrayFormat.index(i))
                 device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
                 device = device.replace("'","")
-		print(device)
                 device1 = client.query(("select * from devices where device='%s'")%(str(device)),epoch='ns')
                 timeStamp = device1.raw['series'][0]['values'][0][0]
-		print(device1)
                 lat = device1.raw['series'][0]['values'][0][2]
                 long = device1.raw['series'][0]['values'][0][3]
                 street = device1.raw['series'][0]['values'][0][5]
                 json_body = [ {
                     "measurement": "devices",
                     "tags": {
-                        "street": street,
                         "latitude": lat,
                         "longitude": long,
-                        "device": device,
                     },
                     "fields": {
-                        "status": float(1)
+                        "status": float(1),
+                        "street": street,
+                        "device": device,
                     },
                     "time": timeStamp,
                 }]
@@ -249,12 +226,11 @@ for i in ArrayFormat:
                         client.write_points(json_body)
                 except Exception as e:
                         print(str(e))
-                print("device up")
 print(deviceDanger)
 print(deviceEteint)
 str1 = ','.join(deviceDanger)
 str2 = ','.join(deviceEteint)
 message = 'holaaaalaaaa ! Alert '+str1+' est en danger et '+str2+' sont etteint'
-#msg.attach(MIMEText(message))
-#mailserver.sendmail(mailInput, mailOutput, msg.as_string())
-#mailserver.quit()
+msg.attach(MIMEText(message))
+mailserver.sendmail(mailInput, mailOutput, msg.as_string())
+mailserver.quit()
