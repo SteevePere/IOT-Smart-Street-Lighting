@@ -135,7 +135,6 @@ def isUnique(devEui):
     similar_devices = list(tabledata.get_points(measurement='devices'))
 
     if (similar_devices == []): #no devices with same EUI have been found
-
         isUnique = True
 
     return(isUnique)
@@ -157,6 +156,7 @@ def getDevicesLastData(all_devices):
             event_point = list(query.get_points())
 
             if (event_point != []): #if device has already emitted
+
                 time = event_point[0]['time'] #we want the time
                 date = "T".join(time.split('T')[:1]) #slicing date out
                 date = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y') #making date pretty
@@ -233,7 +233,7 @@ def highChartTimeSeries():
             event_array = []
             timestamp = int(time.mktime(datetime.datetime.strptime(event['time'], "%Y-%m-%dT%H:%M:%SZ").timetuple()) * 1000)
             timestamp = timestamp + 3600000 #GMT + 1
-	    event_array.append(timestamp) #we store event timestamp into array (in nanoseconds)
+            event_array.append(timestamp) #we store event timestamp into array (in nanoseconds)
             event_array.append(event['count']) #we get the count for this 15-min span
             events_array.append(event_array) #we store this event's data into our main event array
 
@@ -319,7 +319,6 @@ def signIn():
         isSignedIn = cursor.execute("SELECT * FROM users WHERE login = (%s) AND password = (%s)", (login, password))
 
         if (isSignedIn):
-
             return redirect('/map')
 
         else:
@@ -357,6 +356,7 @@ def create_settings():
         if (alert_delay > warning_delay): #already made sure it's the case with js, double-checking
             cursor.execute("UPDATE alerts SET warning_threshold = (%s), alert_threshold = (%s);", (warning_delay, alert_delay)) #updating settings
         else:
+            
             error = "Le seuil de déclenchement d'alerte doit être supérieur au seuil de déclenchement du monitoring !"
             return render_template('admin.html', error=error),400
 
