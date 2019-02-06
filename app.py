@@ -237,7 +237,6 @@ def highChartTimeSeries():
             event_array.append(event['count']) #we get the count for this 15-min span
             events_array.append(event_array) #we store this event's data into our main event array
 
-
         set.append(street) #final data is an array of arrays with street name...
         set = cleanStreetNames(set) #passing array to name cleaner
         set.append(events_array) #...and corresponding events (count, timestamps)
@@ -356,7 +355,7 @@ def create_settings():
         if (alert_delay > warning_delay): #already made sure it's the case with js, double-checking
             cursor.execute("UPDATE alerts SET warning_threshold = (%s), alert_threshold = (%s);", (warning_delay, alert_delay)) #updating settings
         else:
-            
+
             error = "Le seuil de déclenchement d'alerte doit être supérieur au seuil de déclenchement du monitoring !"
             return render_template('admin.html', error=error),400
 
