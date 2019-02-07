@@ -1,6 +1,7 @@
 # coding: utf-8
 
 # -- IMPORTS --
+
 from flask import Flask, request, jsonify
 from flaskext.mysql import MySQL
 import json
@@ -46,15 +47,17 @@ client = InfluxDBClient(host, port, user, password, dbname)
 conn = mysql.connect()
 cursor = conn.cursor()
 
+# -- Functions --
+
 # Retrieving all devices as list
 def getDevices():
 
-    tabledata = client.query('SELECT * FROM devices')
+    tabledata = client.query('SELECT * FROM devices', epoch='ns')
     all_devices = list(tabledata.get_points(measurement='devices')) #we'll keep the list as is, so we can access attributes as needed
 
     return(all_devices)
 
-#Get admin email
+#Get admin's email
 def getAdminsMailAddress():
 
     cursor.execute("SELECT email FROM users WHERE role = 'admin'")
@@ -63,6 +66,50 @@ def getAdminsMailAddress():
 
     return email
 
+#Get admin's name
+def getAdminsName():
+
+    cursor.execute("SELECT first_name FROM users WHERE role = 'admin'")
+    result = cursor.fetchall()
+    name = result[0][0]
+
+    return name
+
+def sendMailToAdmin(warningList, alertList):
+
+    adminsName = getAdminsName()
+    url = 'http://51.77.229.185:8000/signIn'
+
+    message = "Bonjour " + adminsName + ","
+
+    if (warningList != ''): #only if some devices have been flagged as suspicious
+        message += "\n\nLes lampadaires suivants ont franchi votre seuil de monitoring : " + warningList + "."
+
+    if (alertList != ''): #only if some devices have been flagged as faulty
+        message += "\n\nLes lampadaires suivants ont franchi votre seuil d'alerte et sont probablement en panne : " + alertList + "."
+
+    message += "\n\nVous pouvez situer ces installations en vous connectant au portail Et La Lumiere Fut : " + url
+    message += "\n\nCordialement,\n\nL'Equipe La Lumiere Fut"
+
+    mailInput = 'xyz97600@gmail.com'
+    mailOutput = getAdminsMailAddress()
+    msg = MIMEMultipart()
+    msg['From'] = mailInput
+    msg['To'] = mailOutput
+    msg['Subject'] = 'Et La Lumière Fût - Des anomalies nécessitent votre attention'
+
+    mailserver = smtplib.SMTP('smtp.gmail.com', 587)
+    mailserver.ehlo()
+    mailserver.starttls()
+    mailserver.ehlo()
+    mailserver.login(mailInput, 'PLI_2018')
+    msg.attach(MIMEText(message))
+    mailserver.sendmail(mailInput, mailOutput, msg.as_string())
+    mailserver.quit()
+
+    return
+
+#Get device's last event
 def getDevicesLastData(devices):
 
     last_data = {}
@@ -83,16 +130,38 @@ def getDevicesLastData(devices):
 
     return (last_data)
 
-def setDeviceStatusToOff(device):
+#Update device status based on last event
+def changeDeviceStatus(device, newStatus):
+
+    deviceEui = device['device']
+    deviceStatus = device['status']
+    deviceLat = device['latitude']
+    deviceLong = device['longitude']
+    deviceStreet = device['street']
+    time = device['time']
+
+    deviceStatus = float(newStatus) #device is suspicious or faulty, we'll adjust status accordingly
+
+    json_body = [
+        {
+            "measurement": "devices",
+            "tags": {
+                "latitude": deviceLat,
+                "longitude": deviceLong
+            },
+            "fields": {
+                "status": deviceStatus,
+                "device": deviceEui,
+                "street": deviceStreet
+            },
+            "time": time
+        }
+    ]
+    client.write_points(json_body) #and we update
 
     return
 
-def setDeviceStatusToWarning(device):
-
-    return
-
-
-# Get user settings
+# Get user warning and alert settings
 def getSettings():
 
     settings = []
@@ -104,8 +173,8 @@ def getSettings():
 
         row = dict(zip(columns,row))
         settings.append(row)
-        warning_delay = settings[0]['warning_threshold'] #current value, to display on page load
-        alert_delay = settings[0]['alert_threshold'] #current value, to display on page load
+        warning_delay = settings[0]['warning_threshold']
+        alert_delay = settings[0]['alert_threshold']
         settings = {
                 'warning_delay' : warning_delay,
                 'alert_delay' : alert_delay
@@ -113,209 +182,60 @@ def getSettings():
 
     return settings
 
-settings = getSettings()
-warning = settings['warning_delay']
-alert = settings['alert_delay']
+#Main function
+def main():
 
-import time
-now = str(time.time())
-now = ".".join(now.split('.')[:1])
-now = int(now + '000000000') #hacky way to get nanoseconds
+    settings = getSettings() #retrieving user settings
+    warning = settings['warning_delay']
+    alert = settings['alert_delay']
+    warningArray = []
+    alertArray = []
+    warningList = ''
+    alertList = ''
 
-warningDelayNanosecs = warning * 3600000000000
-warningPeriodStartTime = now - warningDelayNanosecs
+    import time
+    now = str(time.time())
+    now = ".".join(now.split('.')[:1])
+    now = int(now + '000000000') #hacky way to get nanoseconds :p
 
-alertDelayNanosecs =  alert * 3600000000000
-alertPeriodStartTime = now - alertDelayNanosecs
+    warningDelayNanosecs = warning * 3600000000000 #warning delay is in hours, we want nanoseconds
+    warningPeriodStartTime = now - warningDelayNanosecs #now we have a timespan
 
-# query = 'select "device","status" from devices where time < now()'
-# queryEvent = 'select * from events;'
-# arrayResult = []
+    alertDelayNanosecs =  alert * 3600000000000 #alert delay is in hours, we want nanoseconds
+    alertPeriodStartTime = now - alertDelayNanosecs #now we have a timespan
 
-##############################################EMAIL########################################
+    devices = getDevices()
+    devicesLastData = getDevicesLastData(devices) #for each device, we get the latest data
 
-mailInput = 'xyz97600@gmail.com'
-mailOutput = getAdminsMailAddress()
-msg = MIMEMultipart()
-msg['From'] = mailInput
-msg['To'] = mailOutput
+    for device in devices:
 
-msg['Subject'] = 'Alert Lampadaire'
-mailserver = smtplib.SMTP('smtp.gmail.com', 587)
-mailserver.ehlo()
-mailserver.starttls()
-mailserver.ehlo()
-mailserver.login(mailInput, 'PLI_2018')
+        deviceEui = device['device']
+        deviceStatus = device['status']
 
-##########################################################################################
+        deviceLastData = devicesLastData[deviceEui] #retrieving device's last data
 
-devices = getDevices()
+        if (deviceLastData < alertPeriodStartTime): #device has not sent data since beginning of alert delay
 
-devicesLastData = getDevicesLastData(devices)
+            changeDeviceStatus(device, 0) #we'll set it to 0 (faulty)
+            alertArray.append(deviceEui) #appending to array for email
 
-for device in devices:
+        if (deviceLastData > alertPeriodStartTime and deviceLastData < warningPeriodStartTime): #device's last data is between the two thresholds, must be flagged as suspicious
 
-    deviceEui = device['device']
-    deviceStatus = device['status']
+            changeDeviceStatus(device, 0.5) #we'll set it to 0.5 (suspicious/warning)
+            warningArray.append(deviceEui) #appending to array for email
 
-    deviceLastData = devicesLastData[deviceEui]
-    print(deviceLastData)
+        # else: we don't do anything, API will take care of setting device back to functionning as soon as data received (if device was previously flagged as suspicious or faulty)
 
-    if (deviceLastData < alertPeriodStartTime or deviceLastData == 0):
+    if (warningArray != []): #if some devices have been flagged suspicious
+        warningList = ', '.join(warningArray) #we put them in a comma-separated string
 
-        # setDeviceStatusToOff(device)
-        print("set to zero")
+    if (alertArray != []): #if some devices have been flagged as faulty
+        alertList = ', '.join(alertArray) #we put them in a comma-separated string
 
-    if (deviceLastData > alertPeriodStartTime and deviceLastData < warningPeriodStartTime):
+    if (warningArray != [] or alertArray != []): #we'll only send email if there is an incident to report
+        sendMailToAdmin(warningList, alertList)
 
-        # setDeviceStatusToWarning(device)
-        print("set to warning")
+    return
 
-
-
-# #result = client.query(query)
-# resultsEvent = client.query(queryEvent)
-# ## getAll result
-# points = resultsEvent.get_points()
-# for item in points:
-# 	arrayResult.append(item)
-#
-# ## str to result
-# getResultInArray = ''.join(str(e) for e in arrayResult)
-# getResultInArray = getResultInArray.replace('}',']').replace('{','').replace('u\'','').replace('\'','')
-# getResultInArray = getResultInArray.split(']')[:-1]
-#
-# ##Iteration on Array to get only time
-# arrayTime = []
-# for item in getResultInArray:
-# 	arrayTime.append(item.split(None,8)[7])
-# ##Change format dateTime
-#
-# ArrayFormat = []
-# for i in arrayTime:
-# 	ArrayFormat.append(i.replace('T',' ').replace('.',' ').replace('-','/').rsplit(' ', 1)[0])
-#
-# def create_json_body_for_value(time,device,lat,long,street):
-#     return json.dumps([
-#         {
-#             "measurement": "devices",
-#             "time": time,
-# 	    "tags": {
-# 		"street": street,
-# 		"latitude": lat,
-# 		"longitude": long,
-# 		},
-#             "fields": {
-#                 "device": device,
-#  		"status": '0.1'
-#             }
-#         }])
-#
-# ## Array for index of values
-# arratGetTime = []
-# arrayGetDevice = []
-# deviceDanger = []
-# deviceEteint = []
-#
-# for i in ArrayFormat:
-#
-#     a = datetime.strptime(i, "%Y/%m/%d %H:%M:%S").strftime("%A, %d. %B %Y %I:%M:%S%p")
-#     b = pd.to_datetime(a) + pd.DateOffset(hours=_valueWarnig)
-#     c = pd.to_datetime(a) + pd.DateOffset(hours=_valueAlert)
-#
-#     if (datetime.now() >= b and datetime.now() < c):
-#
-#         arratGetTime.append(ArrayFormat.index(i))
-#         device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
-#         device = device.replace("'","")
-#         device1 = client.query(("select * from devices where device='%s'")%(str(device)),epoch='ns')
-#         timeStamp = device1.raw['series'][0]['values'][0][0]
-#         lat = device1.raw['series'][0]['values'][0][2]
-#         long = device1.raw['series'][0]['values'][0][3]
-#         street = device1.raw['series'][0]['values'][0][5]
-#         json_body = [ {
-#                 "measurement": "devices",
-#                 "tags": {
-#                     "latitude": lat,
-#                     "longitude": long,
-#             },
-#             "fields": {
-#                     "status": float("0.5"),
-#                     "street": street,
-#                     "device": device,
-#                 },
-#             "time": timeStamp,
-#             }]
-#
-#         try:
-#         	client.write_points(json_body)
-#
-#         except Exception as e:
-#         	print(str(e))
-#
-#         deviceDanger.append(device)
-#
-#     elif (datetime.now() >= c):
-#
-#         arratGetTime.append(ArrayFormat.index(i))
-#         device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
-#         device = device.replace("'","")
-#         device1 = client.query(("select * from devices where device='%s'")%(str(device)),epoch='ns')
-#         timeStamp = device1.raw['series'][0]['values'][0][0]
-#         lat = device1.raw['series'][0]['values'][0][2]
-#         long = device1.raw['series'][0]['values'][0][3]
-#         street = device1.raw['series'][0]['values'][0][5]
-#         json_body = [ {
-#             "measurement": "devices",
-#             "tags": {
-#                 "latitude": lat,
-#                 "longitude": long,
-#             },
-#             "fields": {
-#                 "street": street,
-#                 "device": device,
-#                 "status": float(0)
-#             },
-#             "time": timeStamp,
-#         }]
-#
-#         try:
-#                 client.write_points(json_body)
-#         except Exception as e:
-#                 print(str(e))
-#         deviceEteint.append(device)
-        # else:
-    	# arratGetTime.append(ArrayFormat.index(i))
-        #         device = str(arrayResult[ArrayFormat.index(i)]).split(None,2)[1].replace('u','').replace(',','')
-        #         device = device.replace("'","")
-        #         device1 = client.query(("select * from devices where device='%s'")%(str(device)),epoch='ns')
-        #         timeStamp = device1.raw['series'][0]['values'][0][0]
-        #         lat = device1.raw['series'][0]['values'][0][2]
-        #         long = device1.raw['series'][0]['values'][0][3]
-        #         street = device1.raw['series'][0]['values'][0][5]
-        #         json_body = [ {
-        #             "measurement": "devices",
-        #             "tags": {
-        #                 "latitude": lat,
-        #                 "longitude": long,
-        #             },
-        #             "fields": {
-        #                 "status": float(1),
-        #                 "street": street,
-        #                 "device": device,
-        #             },
-        #             "time": timeStamp,
-        #         }]
-        #         try:
-        #                 client.write_points(json_body)
-        #         except Exception as e:
-        #                 print(str(e))
-
-# print(deviceDanger)
-# print(deviceEteint)
-# str1 = ','.join(deviceDanger)
-# str2 = ','.join(deviceEteint)
-# message = 'holaaaalaaaa ! Alert '+str1+' est en danger et '+str2+' sont etteint'
-# msg.attach(MIMEText(message))
-# mailserver.sendmail(mailInput, mailOutput, msg.as_string())
-# mailserver.quit()
+#Executing script
+main()
