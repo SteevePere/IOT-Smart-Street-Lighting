@@ -1,5 +1,7 @@
 # coding=utf-8
+
 # -- IMPORTS --
+
 from __future__ import unicode_literals
 import hashlib
 import time
@@ -7,18 +9,26 @@ import datetime
 import base64
 from flask import Flask, request, jsonify, redirect, url_for, render_template
 from flaskext.mysql import MySQL
-from flask_influxdb import InfluxDB
+from influxdb import InfluxDBClient
 
 # -- INIT APP --
 
 app = Flask(__name__)
 
-# -- INIT MySQL & InfluxDB --
+# -- INIT MySQL --
 
 mysql = MySQL()
-influx_db = InfluxDB(app=app)
 
-# -- APP CONFIG --
+# -- INFLUXDB CONFIG --
+
+host = 'localhost'
+port = 8086
+user = 'root'
+password = 'root'
+dbName = 'pli'
+client = InfluxDBClient(host, port, user, password, dbName)
+
+# -- MySQL CONFIG --
 
 app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'Makaveli'
@@ -31,15 +41,14 @@ mysql.init_app(app)
 conn = mysql.connect() #connect to MySQL
 cursor = conn.cursor() #query builder
 
+# STREETS #
+
 # Get all streets
 def getStreets():
 
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
-
     streets = []
 
-    street_tags = dbcon.query("SELECT DISTINCT(street) from devices") #retrieving all unique street names from measurement
+    street_tags = client.query("SELECT DISTINCT(street) from devices") #retrieving all unique street names from measurement
     tag_points = list(street_tags.get_points())
 
     for point in tag_points:
@@ -47,18 +56,6 @@ def getStreets():
         streets.append(point['distinct']) #storing values in array
 
     return(streets)
-
-# Get device street from its ID
-def getStreetFromDeviceId(device_id):
-
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
-
-    street = dbcon.query("SELECT street from devices WHERE device = '{0}'".format(device_id))
-    street = list(street.get_points(measurement='devices'))
-    street = street[0]['street'] #retrieving value from list
-
-    return(street)
 
 # Removing unwanted characters from street names
 def cleanStreetNames(streets):
@@ -72,30 +69,12 @@ def cleanStreetNames(streets):
 
     return cleanStreets
 
-# Decoding base 64 payload into valid light reading
-def getLightReadingFromPayload(payload):
-
-    payload= base64.b64decode(payload).encode('hex') #decoding base 64, to hexadecimal
-    frameType = payload[:2] #first byte of payload
-
-    if (frameType == '50'): #we only want light-related frames
-
-        hex_light = payload[-2:] #light reading is last two digits, slicing string
-        dec_light = int(hex_light, 16) #light reading is in hexadecimal format, converting to decimal
-        float_light = float(dec_light) #influxDB value is a float, casting
-
-    else:
-        return
-
-    return(float_light)
+# DEVICES #
 
 #Retrieving device object from id
 def getDevice(device_id):
 
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
-
-    device = dbcon.query("SELECT * from devices WHERE device = '{0}'".format(device_id), epoch='ns') #we want nanosecond precision, needed to overwrite
+    device = client.query("SELECT * from devices WHERE device = '{0}'".format(device_id), epoch='ns') #we want nanosecond precision, needed to overwrite
     device = list(device.get_points(measurement='devices')) #we'll keep the list as is, so we can access attributes as needed
 
     return(device)
@@ -103,10 +82,7 @@ def getDevice(device_id):
 # Retrieving all devices as list
 def getDevices():
 
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
-
-    tabledata = dbcon.query('SELECT * FROM devices')
+    tabledata = client.query('SELECT * FROM devices')
     all_devices = list(tabledata.get_points(measurement='devices')) #we'll keep the list as is, so we can access attributes as needed
 
     return(all_devices)
@@ -126,12 +102,9 @@ def IsOneOff(all_devices):
 # Checking Dev EUI unicity
 def isUnique(devEui):
 
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
-
     isUnique = False
 
-    tabledata = dbcon.query("SELECT * FROM devices WHERE device = '{0}'".format(devEui))
+    tabledata = client.query("SELECT * FROM devices WHERE device = '{0}'".format(devEui))
     similar_devices = list(tabledata.get_points(measurement='devices'))
 
     if (similar_devices == []): #no devices with same EUI have been found
@@ -142,9 +115,6 @@ def isUnique(devEui):
 # When did a device last emit?
 def getDevicesLastData(all_devices):
 
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
-
     last_data = {}
 
     for device in all_devices:
@@ -152,7 +122,7 @@ def getDevicesLastData(all_devices):
         if (device['status'] == 0 or device['status'] == 0.5): #for now, only interested in devices that are off or in warning mode
 
             device_id = device['device']
-            query = dbcon.query("SELECT last(lumens), time FROM events WHERE device = '{0}'".format(device_id))
+            query = client.query("SELECT last(lumens), time FROM events WHERE device = '{0}'".format(device_id))
             event_point = list(query.get_points())
 
             if (event_point != []): #if device has already emitted
@@ -171,23 +141,20 @@ def getDevicesLastData(all_devices):
     return (last_data)
 
 #Checking current status, only called upon when new data received
-def updateDeviceStatus(deviceId):
+def updateDeviceStatus(deviceId, status):
 
     device = getDevice(deviceId)
 
-    deviceStatus = device[0]['status']
+    currentDeviceStatus = device[0]['status']
 
-    if (deviceStatus == 0 or deviceStatus == 0.5): #device has sent data, we need to change its status
+    if (currentDeviceStatus == 0 or currentDeviceStatus == 0.5): #device has sent data, we need to change its status
 
         deviceLat = device[0]['latitude']
         deviceLong = device[0]['longitude']
         deviceStreet = device[0]['street']
         time = device[0]['time']
 
-        deviceStatus = float(1) #back in business!
-
-        dbcon = influx_db.connection
-        dbcon.switch_database(database='pli')
+        newDeviceStatus = float(status) #back in business!
 
         json_body = [
             {
@@ -197,22 +164,41 @@ def updateDeviceStatus(deviceId):
                     "longitude": deviceLong
                 },
                 "fields": {
-                    "status": deviceStatus,
+                    "status": newDeviceStatus,
                     "device": deviceId,
                     "street": deviceStreet
                 },
                 "time": time
             }
         ]
-        dbcon.write_points(json_body) #and we update
+
+        client.write_points(json_body) #and we update
 
     return
 
+# PAYLOAD #
+
+# Decoding base 64 payload into valid light reading
+def getLightReadingFromPayload(payload):
+
+    payload= base64.b64decode(payload).encode('hex') #decoding base 64, to hexadecimal
+    frameType = payload[:2] #first byte of payload
+
+    if (frameType == '50'): #we only want light-related frames
+
+        hex_light = payload[-2:] #light reading is last two digits, slicing string
+        dec_light = int(hex_light, 16) #light reading is in hexadecimal format, converting to decimal
+        float_light = float(dec_light) #influxDB value is a float, casting
+
+    else:
+        return
+
+    return(float_light)
+
+# CHARTS #
+
 # Retrieving data for time series chart
 def highChartTimeSeries():
-
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
 
     start_time = 1548975600000000000 #01/02/2019 (arbitrary)
     streets = getStreets()
@@ -225,7 +211,7 @@ def highChartTimeSeries():
         events_array = []
         set = []
 
-        events = dbcon.query("select count(lumens) from events where street = '{0}' and time > {1} group by time(15m)".format(street, start_time))
+        events = client.query("select count(lumens) from events where street = '{0}' and time > {1} group by time(15m)".format(street, start_time))
         event_points = list(events.get_points())
 
         for event in event_points: #for each event
@@ -247,9 +233,6 @@ def highChartTimeSeries():
 # Retrieving data for weekly data chart
 def chartJsWeekCount(week):
 
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
-
     streets = getStreets()
     perStreetWeeklyCount = [] #we want to return an array of arrays with street name, count for the week, and color in each array
     i = 0 #dataset counter
@@ -263,7 +246,7 @@ def chartJsWeekCount(week):
 
     for street in streets:
 
-        weekly_events = dbcon.query("select count(lumens) from events where street = '{0}' and time >= {1} AND time <= {2} group by time(1d)".format(street, week_start_timestamp, week_end_timestamp)) #counting events per week in given timespan
+        weekly_events = client.query("select count(lumens) from events where street = '{0}' and time >= {1} AND time <= {2} group by time(1d)".format(street, week_start_timestamp, week_end_timestamp)) #counting events per week in given timespan
         weekly_event_points = list(weekly_events.get_points())
 
         counts = []
@@ -366,9 +349,6 @@ def create_settings():
 
 def create_device():
 
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
-
     allDevices = getDevices() #we want to show current device locations on map
     streets = getStreets() #so user can pick among existing
     cleanStreets = cleanStreetNames(streets) #cleaning
@@ -401,7 +381,8 @@ def create_device():
                 }
             }
         ]
-        dbcon.write_points(json_body) #and we insert
+
+        client.write_points(json_body) #and we insert
 
     return render_template('newDevice.html', devices=allDevices, streets=cleanStreets),200
 
@@ -421,14 +402,12 @@ def map():
 
 def getEvents():
 
-    dbcon = influx_db.connection
-    dbcon.switch_database(database='pli')
-
     streets = getStreets()
     week = '2019-W06' #default (so chart is not empty on GET page load)
     post = False
 
     if (request.method == 'POST'):
+
         week = request.form['week']
         post = True #we'll load page tabs differently if this is a weekly chart request
 
@@ -451,8 +430,9 @@ def postEvent():
     if (float_light): #proceed only if this is a light reading
 
         device_id = content['hardware_serial']
-        updateDeviceStatus(device_id) #if device had been flagged as malfunctioning, we'll update its status
-        street = getStreetFromDeviceId(device_id) #we want to store device street as event tag
+        status = 1 #we want to set device back to functional
+        updateDeviceStatus(device_id, status) #if device had been flagged as malfunctioning, we'll update its status
+        street = getDevice(device_id)[0]['street'] #we want to store device street as event tag
 
         time = content['metadata']['time'] #time the TTN server received frame
 
@@ -470,9 +450,7 @@ def postEvent():
             }
         ]
 
-        dbcon = influx_db.connection
-        dbcon.switch_database(database='pli')
-        dbcon.write_points(json_body) #and we insert
+        client.write_points(json_body) #and we insert
 
         return jsonify({'code':201,'message': 'Created'}),201
 
